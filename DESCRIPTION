@@ -1,0 +1,30 @@
+Package: form.model
+Title: Neutral Versioned Form Definitions and Workbook Layouts
+Version: 0.3.2
+Authors@R: 
+    person("Tony", "Chemit", role = c("aut", "cre"),
+           email = "dev@tchemit.fr")
+Description: Loads explicit YAML resources describing versioned forms,
+    fields, declarative constraints, reference requirements, and workbook
+    layouts. Checks model definitions against an installed YAML schema and
+    consistency rules, and provides value-like inspection APIs. Does not
+    validate submitted data or connect to external services.
+License: LGPL-2.1
+URL: https://ultreia-io.github.io/form.model/,
+        https://github.com/ultreia-io/form.model
+BugReports: https://github.com/ultreia-io/form.model/issues
+Encoding: UTF-8
+Depends: R (>= 4.1.0)
+Imports: yaml (>= 2.3.10)
+Suggests: knitr, rmarkdown, testthat (>= 3.0.0)
+VignetteBuilder: knitr
+Config/testthat/edition: 3
+Config/Needs/coverage: covr, xml2
+Config/Needs/website: pkgdown, covr, htmltools, xml2
+Config/roxygen2/version: 8.1.1
+NeedsCompilation: no
+Packaged: 2026-10-23 05:23:05 UTC; tchemit
+Author: Tony Chemit [aut, cre]
+Maintainer: Tony Chemit <dev@tchemit.fr>
+Repository: CRAN
+Date/Publication: 2026-11-06 16:40:21 UTC
