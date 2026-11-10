@@ -3,6 +3,7 @@
 #' @return The schema as a nested list. Unsupported versions raise `model_form_error`.
 #' @details Uses the package's `form.model/schema/1` dialect, not JSON Schema.
 #' @examples
+#' # Inspect the supported schema contract version.
 #' form_schema()$contract_version
 #' @export
 form_schema <- function(version = "1.0.0") {
@@ -43,12 +44,12 @@ scalar_type <- function(x, type) {
 #' @keywords internal
 schema_check <- function(x, node, definitions, path, add) {
   while (!is.null(node$ref)) node <- definitions[[node$ref]]
-  if (!is.null(node$shorthand) && !is.list(x)) {
+  if (!is.null(node$shorthand) && (!is.list(x) || is.null(names(x)))) {
     return(schema_check(x, node$shorthand, definitions, path, add))
   }
   type <- node$type
   valid <- switch(type,
-    mapping = is.list(x) && plain(x) && !is.null(names(x)),
+    mapping = is.list(x) && plain(x) && (!length(x) || !is.null(names(x))),
     sequence = is.list(x) && plain(x) && is.null(names(x)),
     scalar_type(x, type))
   if (!valid) {
@@ -94,9 +95,11 @@ schema_check <- function(x, node, definitions, path, add) {
 #'   passed to `add`.
 #' @keywords internal
 semantic_check <- function(d, add) {
-  references <- unlist(d$references, use.names = FALSE)
-  for (i in which(duplicated(references))) {
-    add(paste0("$.references[", i, "]"), paste0("duplicate reference: ", references[[i]]))
+  for (catalogue in names(d$references)) {
+    tables <- unlist(d$references[[catalogue]], use.names = FALSE)
+    for (i in which(duplicated(tables)))
+      add(paste0("$.references.", catalogue, "[", i, "]"),
+          paste0("duplicate reference table: ", tables[[i]]))
   }
   sheet_names <- names(d$sheets)
   if (anyDuplicated(tolower(sheet_names))) add("$.sheets", "duplicate workbook sheet names (case insensitive)")
@@ -121,6 +124,52 @@ semantic_check <- function(d, add) {
     }
     locations <- character()
     field_names <- names(sheet$fields)
+    if (!is.null(sheet$primary_key)) {
+      key_path <- paste0("$.sheets.", sheet_name, ".primary_key")
+      if (!table) add(key_path, "primary key requires a table layout")
+      key <- unlist(sheet$primary_key, use.names = FALSE)
+      for (i in seq_along(key)) {
+        path <- paste0(key_path, "[", i, "]")
+        if (!key[[i]] %in% field_names) add(path, paste0("unknown field: ", key[[i]]))
+        if (duplicated(key)[[i]]) add(path, paste0("duplicate primary key field: ", key[[i]]))
+      }
+    }
+    for (constraint in c("unique_key", "at_least_one")) {
+      declaration <- sheet[[constraint]]
+      if (is.null(declaration)) next
+      path <- paste0("$.sheets.", sheet_name, ".", constraint)
+      if (!table) add(path, paste0(constraint, " requires a table layout"))
+      key <- unlist(if (constraint == "at_least_one") declaration$fields else declaration,
+                    use.names = FALSE)
+      if (anyDuplicated(key)) add(path, paste0("duplicate ", constraint, " fields"))
+      for (name in setdiff(key, field_names)) add(path, paste0("unknown field: ", name))
+    }
+    if (!is.null(sheet$parent_key)) {
+      parent <- sheet$parent_key
+      path <- paste0("$.sheets.", sheet_name, ".parent_key")
+      child_key <- unlist(parent$fields, use.names = FALSE)
+      if (!table) add(path, "parent key requires a table layout")
+      if (anyDuplicated(child_key)) add(path, "duplicate parent key fields")
+      for (name in setdiff(child_key, field_names)) add(path, paste0("unknown child field: ", name))
+      parent_index <- match(parent$sheet, sheet_names)
+      if (is.na(parent_index)) {
+        add(path, paste0("unknown parent sheet: ", parent$sheet))
+      } else {
+        if (parent_index >= sheet_index) add(path, "parent sheet must precede child sheet")
+        target <- d$sheets[[parent$sheet]]
+        target_key <- unlist(target$primary_key, use.names = FALSE)
+        if (!length(target_key)) add(path, "parent sheet must declare a primary key")
+        if (length(child_key) != length(target_key)) {
+          add(path, "parent key must match the primary key component count")
+        } else for (i in seq_along(child_key)) {
+          child_field <- sheet$fields[[child_key[[i]]]]
+          parent_field <- target$fields[[target_key[[i]]]]
+          if (!is.null(child_field) && !is.null(parent_field) &&
+              !identical(child_field$type, parent_field$type))
+            add(path, "parent key components must have the same types as the parent primary key")
+        }
+      }
+    }
     for (field_index in seq_along(sheet$fields)) {
       field_name <- field_names[[field_index]]
       field <- sheet$fields[[field_index]]
@@ -138,6 +187,31 @@ semantic_check <- function(d, add) {
           add(field_path, "integer bounds must be whole numbers")
         }
       }
+      maximum_field <- field$maximum_field
+      if (!is.null(maximum_field)) {
+        path <- paste0(field_path, ".maximum_field")
+        numeric_types <- c("integer", "number", "latitude", "longitude")
+        if (!field$type %in% numeric_types)
+          add(path, "maximum_field requires a numeric field")
+        if (!maximum_field %in% field_names) {
+          add(path, paste0("unknown field: ", maximum_field))
+        } else if (!sheet$fields[[maximum_field]]$type %in% numeric_types) {
+          add(path, "maximum_field must reference a numeric field")
+        }
+        if (maximum_field == field_name)
+          add(path, "field cannot be its own maximum_field")
+      }
+      if (!is.null(field$sequence)) {
+        path <- paste0(field_path, ".sequence")
+        if (!table) add(path, "sequence requires a table layout")
+        if (!field$type %in% c("integer", "string"))
+          add(path, "sequence requires an integer or string field")
+        groups <- unlist(field$sequence$group_by, use.names = FALSE)
+        if (anyDuplicated(groups)) add(path, "duplicate sequence grouping fields")
+        for (name in setdiff(groups, field_names))
+          add(path, paste0("unknown grouping field: ", name))
+        if (field_name %in% groups) add(path, "sequence cannot group by itself")
+      }
       pattern_ok <- TRUE
       if (!is.null(constraints$pattern)) {
         if (!field$type %in% c("string", "email", "date", "datetime")) {
@@ -150,19 +224,13 @@ semantic_check <- function(d, add) {
         }, error = function(e) FALSE)
         if (!pattern_ok) add(paste0(field_path, ".pattern"), "invalid PCRE regular expression")
       }
-      if (!is.null(constraints$reference)) {
-        reference <- constraints$reference
-        reference_path <- paste0(field_path, ".reference")
-        if (is.list(reference)) {
-          reference <- reference$id
-          reference_path <- paste0(reference_path, ".id")
-        }
-        if (!reference %in% references) {
-          add(reference_path, paste0("unknown reference: ", reference))
-        }
-        if (field$type != "string") {
-          add(reference_path, "reference constraints require a string field")
-        }
+      use <- constraints$reference
+      if (!is.null(use)) {
+        path <- paste0(field_path, ".reference")
+        if (!use$catalogue %in% names(d$references))
+          add(paste0(path, ".catalogue"), paste0("unknown reference catalogue: ", use$catalogue))
+        else if (!use$table %in% unlist(d$references[[use$catalogue]], use.names = FALSE))
+          add(paste0(path, ".table"), paste0("unknown reference table: ", use$table))
       }
       dependency <- field$required_field
       if (!is.null(dependency)) {
@@ -223,8 +291,10 @@ semantic_check <- function(d, add) {
 #'   Invalid definitions return diagnostics; invalid arguments raise `model_form_error`.
 #'   Submitted data is not checked.
 #' @examples
-#' model <- read_form_model("examples/survey-form.yaml", "form.model")
-#' check_form_model(form_definition(model))
+#' # Load the bundled survey model.
+#' model_definition <- read_form_model("examples/survey/form.yaml", "form.model")
+#' # Check the structure and consistency of the definition.
+#' check_form_model(form_definition(model_definition))
 #' @export
 check_form_model <- function(definition, resource = "<list>") {
   text_arg(resource, "resource")
@@ -244,8 +314,10 @@ check_form_model <- function(definition, resource = "<list>") {
 #' @return The definition as a `form_model` list, without the source label.
 #'   Invalid definitions raise `model_form_error` with diagnostics.
 #' @examples
-#' model <- read_form_model("examples/survey-form.yaml", "form.model")
-#' as_form_model(form_definition(model))
+#' # Load the bundled survey model.
+#' model_definition <- read_form_model("examples/survey/form.yaml", "form.model")
+#' # Construct a checked model from the definition.
+#' as_form_model(form_definition(model_definition))
 #' @export
 as_form_model <- function(definition, resource = "<list>") {
   result <- check_form_model(definition, resource)

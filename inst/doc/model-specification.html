@@ -39,6 +39,108 @@ ul.task-list{list-style: none;}
 
 
 
+<style type="text/css">
+code {
+white-space: pre;
+}
+.sourceCode {
+overflow: visible;
+}
+</style>
+<style type="text/css" data-origin="pandoc">
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+{ counter-reset: source-line 0; }
+pre.numberSource code > span
+{ position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+{ content: counter(source-line);
+position: relative; left: -1em; text-align: right; vertical-align: baseline;
+border: none; display: inline-block;
+-webkit-touch-callout: none; -webkit-user-select: none;
+-khtml-user-select: none; -moz-user-select: none;
+-ms-user-select: none; user-select: none;
+padding: 0 4px; width: 4em;
+color: #aaaaaa;
+}
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa; padding-left: 4px; }
+div.sourceCode
+{ }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } 
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.at { color: #7d9029; } 
+code span.bn { color: #40a070; } 
+code span.bu { color: #008000; } 
+code span.cf { color: #007020; font-weight: bold; } 
+code span.ch { color: #4070a0; } 
+code span.cn { color: #880000; } 
+code span.co { color: #60a0b0; font-style: italic; } 
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.do { color: #ba2121; font-style: italic; } 
+code span.dt { color: #902000; } 
+code span.dv { color: #40a070; } 
+code span.er { color: #ff0000; font-weight: bold; } 
+code span.ex { } 
+code span.fl { color: #40a070; } 
+code span.fu { color: #06287e; } 
+code span.im { color: #008000; font-weight: bold; } 
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.kw { color: #007020; font-weight: bold; } 
+code span.op { color: #666666; } 
+code span.ot { color: #007020; } 
+code span.pp { color: #bc7a00; } 
+code span.sc { color: #4070a0; } 
+code span.ss { color: #bb6688; } 
+code span.st { color: #4070a0; } 
+code span.va { color: #19177c; } 
+code span.vs { color: #4070a0; } 
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } 
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    var j = 0;
+    while (j < rules.length) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") {
+        j++;
+        continue;
+      }
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') {
+        j++;
+        continue;
+      }
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
 
 
 
@@ -274,12 +376,18 @@ on the same sheet is filled.</li>
 matching the type, bounds and pattern.</li>
 <li><code>minimum</code>, <code>maximum</code>: inclusive numeric
 bounds; integer bounds must be whole numbers.</li>
+<li><code>maximum_field</code>: the value must not exceed the named
+numeric field on the same sheet; compare only valid, present
+values.</li>
 <li><code>pattern</code>: a PCRE regular expression for string, email,
 date or datetime fields.</li>
+<li><code>sequence</code>: consecutive integer numbering in worksheet
+order, grouped by same-sheet fields. Declare
+<code>sequence: {start: 1, group_by: [trip_id, catch_id]}</code> on an
+integer or string table field.</li>
 <li><code>unique</code>: requires distinct values within a repeated
 table field.</li>
-<li><code>reference</code>: a code-list ID declared in the model’s
-<code>references</code> list; valid only for string fields.</li>
+<li><code>reference</code>: a catalogue, table and named lookup.</li>
 </ul>
 <p>Enums are constraints, not a separate type. Quote numeric-looking
 string codes: <code>enum: [&quot;01&quot;, &quot;02&quot;]</code>.</p>
@@ -288,11 +396,15 @@ unit required when length is filled, including zero.</p>
 <p>In tables, this applies within the same row. A field cannot depend on
 itself; mutual dependencies are allowed.</p>
 <p>The condition still permits a unit when length is empty.</p>
-<p>References default to error severity. Use
-<code>reference: {id: observers, severity: warning}</code> for
-warnings.</p>
-<p>The model declares reference names only. Callers supply the code
-lists when validating submitted data.</p>
+<p>Reference bindings default to error severity. Use
+<code>severity: warning</code> for a warning.</p>
+<p>Declare tables under freely named catalogues:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="fu">references</span><span class="kw">:</span></span>
+<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a><span class="at">  </span><span class="fu">people</span><span class="kw">:</span><span class="at"> </span><span class="kw">[</span><span class="at">contacts</span><span class="kw">]</span></span></code></pre></div>
+<p>Bind the field to a table and lookup:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="fu">contact_email</span><span class="kw">:</span><span class="at"> </span><span class="kw">{</span><span class="fu">location</span><span class="kw">:</span><span class="at"> C4</span><span class="kw">,</span><span class="at"> </span><span class="fu">type</span><span class="kw">:</span><span class="at"> email</span><span class="kw">,</span><span class="at"> </span><span class="fu">reference</span><span class="kw">:</span><span class="at"> </span><span class="kw">{</span><span class="fu">catalogue</span><span class="kw">:</span><span class="at"> people</span><span class="kw">,</span><span class="at"> </span><span class="fu">table</span><span class="kw">:</span><span class="at"> contacts</span><span class="kw">,</span><span class="at"> </span><span class="fu">lookup</span><span class="kw">:</span><span class="at"> email</span><span class="kw">,</span><span class="at"> </span><span class="fu">severity</span><span class="kw">:</span><span class="at"> warning</span><span class="kw">}}</span></span></code></pre></div>
+<p>Catalogue names have no built-in meaning. Matching settings and
+reference data belong outside the model.</p>
 <p>See <code>?form_fields</code> for the effective field properties
 returned by accessors.</p>
 </div>
@@ -300,8 +412,9 @@ returned by accessors.</p>
 <h2>Workbook layouts</h2>
 <p><code>sheets</code> is an ordered mapping of worksheet names. Every
 declared sheet is required; names are unique ignoring case.</p>
-<p>Each sheet has a <code>layout</code> followed by <code>fields</code>,
-keyed by local field name.</p>
+<p>Each sheet has a <code>layout</code>, an optional
+<code>primary_key</code>, and <code>fields</code>, keyed by local field
+name.</p>
 <ul>
 <li><code>kind: cells</code>: requires <code>column_count</code>. Each
 field needs a unique uppercase A1 <code>location</code>, such as
@@ -318,6 +431,46 @@ count. Fixed locations must fit declared dimensions.</p>
 <p>Coordinates are one-based. An empty sheet can declare
 <code>fields: {}</code>; an empty table derives a column count of
 zero.</p>
+</div>
+<div id="primary-keys" class="section level2">
+<h2>Primary keys</h2>
+<p>A table can declare one field or an ordered combination of fields as
+its primary key:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="fu">primary_key</span><span class="kw">:</span><span class="at"> </span><span class="kw">[</span><span class="at">station</span><span class="kw">,</span><span class="at"> observation_id</span><span class="kw">]</span></span></code></pre></div>
+<p>Every component must be filled; the combination identifies one row
+within that sheet of a submitted form.</p>
+<p>Individual components may repeat in a composite key. Field-level
+<code>unique</code> still means individual uniqueness.</p>
+<p>Use local field names. Keys must be nonempty, contain no repeated
+fields, and reference declared table fields.</p>
+<p>Omit <code>primary_key</code> when no key is defined. Fixed-cell
+sheets cannot declare a primary key.</p>
+<p><code>form_sheets()</code> and <code>form_definition()</code> retain
+the declaration without changing field constraints.</p>
+<p>This package checks key definitions. Checking submitted key values
+belongs to the validation package.</p>
+</div>
+<div id="optional-composite-keys-and-row-completeness" class="section level2">
+<h2>Optional composite keys and row completeness</h2>
+<p>Table sheets can declare these independent constraints:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a><span class="fu">unique_key</span><span class="kw">:</span><span class="at"> </span><span class="kw">[</span><span class="at">station</span><span class="kw">,</span><span class="at"> category</span><span class="kw">]</span></span>
+<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a><span class="fu">at_least_one</span><span class="kw">:</span><span class="at"> </span><span class="kw">{</span><span class="fu">fields</span><span class="kw">:</span><span class="at"> </span><span class="kw">[</span><span class="at">category</span><span class="kw">,</span><span class="at"> count</span><span class="kw">],</span><span class="at"> </span><span class="fu">severity</span><span class="kw">:</span><span class="at"> warning</span><span class="kw">}</span></span></code></pre></div>
+<p><code>unique_key</code> checks uniqueness only when every component
+is supplied and correctly typed. It does not make its fields mandatory.
+Every occurrence of a duplicate complete key is reported as an error. A
+sheet may declare both a primary key and a unique key; they are checked
+independently. Parent relationships continue to reference a parent’s
+primary key.</p>
+<p><code>at_least_one</code> requires a supplied value in at least one
+selected field on each populated row. A row is populated when any
+declared field has a supplied value after preparation. Entirely empty
+rows are skipped. Zero and false count as supplied values. Both
+constraints use the validation engine’s configured missing-value
+policy.</p>
+<p>Both field lists must be nonempty, contain no duplicates, and name
+declared fields in the same table. <code>at_least_one</code> accepts
+<code>error</code>, <code>warning</code>, or <code>info</code>; omitted
+severity defaults to <code>error</code>.</p>
 </div>
 <div id="yaml-conventions" class="section level2">
 <h2>YAML conventions</h2>

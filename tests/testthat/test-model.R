@@ -5,14 +5,19 @@ test_that("installed resources and ordered accessors work independently of cwd",
   expect_true(check_form_model(form_definition(m))$valid)
   expect_identical(names(form_fields(m, "Metadata")),
                    c("Metadata.submission", "Metadata.date", "Metadata.contact_email", "Metadata.comment"))
-  expect_identical(names(form_sheets(m)), c("Metadata", "Observations"))
-  expect_identical(form_references(m), c("observers", "stations"))
+  expect_identical(names(form_sheets(m)), c("Metadata", "Observations", "Samples", "Measurements", "Equipment", "Notes"))
+  expect_identical(unlist(form_references(m)$code_lists, use.names = FALSE), c("observers", "stations"))
   expect_identical(form_layout(m, "Observations")$start_row, 6L)
   expect_identical(form_field(m, "Observations.unit")$enum, list("cm", "m"))
   expect_identical(form_field(m, "Observations.station")$reference$severity, "error")
+  expect_identical(form_sheets(m)$Samples$parent_key$sheet, "Observations")
+  expect_identical(form_sheets(m)$Measurements$parent_key$sheet, "Samples")
+  expect_identical(form_field(m, "Samples.minimum_length")$maximum_field, "maximum_length")
+  expect_identical(form_field(m, "Samples.sample_no")$sequence$start, 1L)
+  expect_true(form_field(m, "Equipment.serial")$unique)
   expect_identical(form_metadata(m)$schema_version, "1.0.0")
-  expect_identical(form_metadata(m)$form$version, "2026.1")
-  expect_output(print(m), "survey @ 2026.1")
+  expect_identical(form_metadata(m)$form$version, "2026.2")
+  expect_output(print(m), "survey @ 2026.2")
   expect_output(print(check_form_model(form_definition(m))), "valid")
   expect_output(print(check_form_model(list())), "invalid")
   expect_error(form_fields(m, "absent"), "unknown sheet")
@@ -25,17 +30,17 @@ test_that("compact declarations expose effective field values", {
   m <- example_model()
   expect_identical(names(m$sheets$Metadata$fields), c("submission", "date", "contact_email", "comment"))
   expect_false("mandatory" %in% names(m$sheets$Metadata$fields$comment))
-  expect_identical(m$sheets$Observations$fields$station$reference, "stations")
+  expect_identical(m$sheets$Observations$fields$station$reference, list(catalogue = "code_lists", table = "stations", lookup = "code"))
   expect_false(form_field(m, "Metadata.comment")$mandatory)
   expect_true(form_field(m, "Metadata.submission")$mandatory)
   expect_identical(form_field(m, "Observations.count")$column, 2L)
   expect_identical(form_field(m, "Observations.station")$reference$severity, "error")
 
   d <- form_definition(m)
-  d$form$version <- "2026.2"
+  d$form$version <- "2026.3"
   revised <- as_form_model(d)
-  expect_identical(form_metadata(revised)$form$version, "2026.2")
-  expect_identical(form_metadata(m)$form$version, "2026.1")
+  expect_identical(form_metadata(revised)$form$version, "2026.3")
+  expect_identical(form_metadata(m)$form$version, "2026.2")
   schema <- form_schema()
   schema$contract_version <- "changed"
   expect_identical(form_schema()$contract_version, "1.0.0")
@@ -44,14 +49,14 @@ test_that("compact declarations expose effective field values", {
 
 test_that("selection requires exact form identity and rejects ambiguity", {
   path <- example_path()
-  expect_identical(select_form_model(path, "survey", "2026.1"), example_model())
-  expect_s3_class(select_form_model("examples/survey-form.yaml", "survey", "2026.1", "form.model"), "form_model")
-  expect_error(select_form_model(path, "Survey", "2026.1"), "matched 0")
+  expect_identical(select_form_model(path, "survey", "2026.2"), example_model())
+  expect_s3_class(select_form_model("examples/survey/form.yaml", "survey", "2026.2", "form.model"), "form_model")
+  expect_error(select_form_model(path, "Survey", "2026.2"), "matched 0")
   expect_error(select_form_model(path, "survey", "2026"), "matched 0")
-  expect_error(select_form_model(c(path, path), "survey", "2026.1"), "matched 2")
+  expect_error(select_form_model(c(path, path), "survey", "2026.2"), "matched 2")
   expect_error(select_form_model(character(), "x", "1"), "paths")
   expect_error(select_form_model(path, "survey", 1), "version")
-  expect_error(select_form_model(c(path, yaml_file("invalid")), "survey", "2026.1"), "expected mapping")
+  expect_error(select_form_model(c(path, yaml_file("invalid")), "survey", "2026.2"), "expected mapping")
 })
 
 test_that("resources and argument errors are explicit", {
@@ -92,16 +97,18 @@ test_that("hidden mutable attributes cannot enter model values", {
   expect_bad(d, ".type", "expected string")
 })
 
-test_that("reference shorthand preserves declarations and resolves severity", {
-  compact <- example_model()
+test_that("neutral reference bindings preserve declarations and resolve severity", {
+  compact_definition <- form_definition(example_model())
+  compact_definition$sheets$Observations$fields$station$reference <- list(catalogue = "code_lists", table = "stations", lookup = "code")
+  compact <- as_form_model(compact_definition)
   d <- form_definition(compact)
-  d$sheets$Observations$fields$station$reference <- list(id = "stations", severity = "error")
+  d$sheets$Observations$fields$station$reference <- list(catalogue = "code_lists", table = "stations", lookup = "code", severity = "error")
   expect_identical(form_fields(compact), form_fields(as_form_model(d)))
   d$sheets$Observations$fields$station$reference$severity <- "warning"
   expect_identical(form_field(as_form_model(d), "Observations.station")$reference,
-                   list(id = "stations", severity = "warning"))
+                   list(catalogue = "code_lists", table = "stations", lookup = "code", severity = "warning"))
   expect_identical(form_definition(compact)$sheets$Observations$fields$station,
-                   list(mandatory = TRUE, type = "string", reference = "stations"))
+                   list(mandatory = TRUE, type = "string", reference = list(catalogue = "code_lists", table = "stations", lookup = "code")))
 })
 
 test_that("cell locations decode across column letter boundaries", {
@@ -117,7 +124,7 @@ test_that("cell locations decode across column letter boundaries", {
     expect_false(any(c("row", "column", "constraints") %in% names(d$sheets$Metadata$fields$submission)))
   }
   expect_true(all(vapply(form_sheets(example_model()), function(sheet) {
-    identical(names(sheet), c("layout", "fields"))
+    identical(setdiff(names(sheet), c("primary_key", "parent_key", "unique_key", "at_least_one")), c("layout", "fields"))
   }, logical(1))))
 })
 

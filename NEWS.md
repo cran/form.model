@@ -1,5 +1,35 @@
-# form.model 0.3.2
+# form.model 0.6.2
 
+* Fix README documentation links in the source package while keeping website links relative.
+* Check Linux R-devel before release and cache CI toolchains and dependencies.
+
+# form.model 0.6.1
+
+* Submit the checked GitHub release archive to CRAN automatically, with duplicate submission protection.
+* Publish build coverage to Codecov for develop and main; remove the custom coverage report and website dependencies.
+* Refresh release badges and document full local CRAN checks and manual submission.
+
+# form.model 0.6.0
+
+* Replace catalogue-specific reference declarations with catalogue, table and lookup bindings.
+* Support optional keys and require at least one value across selected fields in a row.
+* Add terminology and revised guides, with CRAN as the default installation method.
+* Enable CRAN checks in CI and adapt documentation links for package installation and website use.
+
+# form.model 0.5.1
+
+* Enrich the survey model and include populated and empty matching workbooks.
+
+# form.model 0.5.0
+
+* Declare parent keys linking rows between sheets.
+* Define ordered sequences within row groups.
+* Use another field as a numeric upper limit with `maximum_field`.
+
+# form.model 0.4.0
+
+* Declare and inspect primary keys for table sheets.
+* Group code lists and registry tables under form references, with a column selected by each registry field.
 * Fix README documentation links and clarify the package description for CRAN checks.
 
 # form.model 0.3.1
@@ -17,7 +47,6 @@
 # form.model 0.2.0
 
 * Rename the package from `model.form` to `form.model`; update installation references and namespace calls.
-
 * Derive table column counts from the ordered field definitions; remove redundant `layout.column_count` declarations.
 * Simplify installation instructions and guide navigation; maintain the README directly in Markdown.
 * Introduce release pull requests with manual merging, followed by package and documentation publication.

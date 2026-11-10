@@ -2,7 +2,7 @@
 % Please edit documentation in R/inspect.R
 \name{form_references}
 \alias{form_references}
-\title{Get reference requirements}
+\title{Get declared reference catalogues and tables}
 \usage{
 form_references(model)
 }
@@ -10,12 +10,15 @@ form_references(model)
 \item{model}{A checked \code{form_model} from \code{\link[=read_form_model]{read_form_model()}} or \code{\link[=as_form_model]{as_form_model()}}.}
 }
 \value{
-Declared reference names. Reference data is not loaded.
+A named list of catalogue names and their declared table identifiers.
+Reference data is not loaded.
 }
 \description{
-Get reference requirements
+Get declared reference catalogues and tables
 }
 \examples{
-model <- read_form_model("examples/survey-form.yaml", "form.model")
-form_references(model)
+# Load the bundled survey model.
+model_definition <- read_form_model("examples/survey/form.yaml", "form.model")
+# Inspect the catalogue and table requirements.
+form_references(model_definition)
 }

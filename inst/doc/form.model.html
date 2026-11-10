@@ -48,8 +48,9 @@ overflow: visible;
 }
 </style>
 <style type="text/css" data-origin="pandoc">
+html { -webkit-text-size-adjust: 100%; }
 pre > code.sourceCode { white-space: pre; position: relative; }
-pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
 pre > code.sourceCode > span:empty { height: 1.2em; }
 .sourceCode { overflow: visible; }
 code.sourceCode > span { color: inherit; text-decoration: inherit; }
@@ -340,81 +341,145 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 
 
 
-<div id="about-this-example" class="section level2">
-<h2>About this example</h2>
+<p>Read the <a href="terminology.html">Terminology</a> for the concepts
+used in this guide.</p>
+<div id="about-this-guide" class="section level2">
+<h2>About this guide</h2>
 <p>This guide demonstrates the bundled survey form definition.</p>
-<p>You will load the model, inspect its contents, and see how invalid
-definitions are reported.</p>
-<p>This package checks form definitions. Submitted-data validation
-belongs to <code>form.validation</code>.</p>
+<p>You will load the form model, inspect its contents, and see how
+invalid definitions are reported.</p>
+</div>
+<div id="download-the-example-files" class="section level2">
+<h2>Download the example files</h2>
+<p>Find these files with
+<code>system.file(&quot;examples&quot;, &quot;survey&quot;, package = &quot;form.model&quot;)</code>.</p>
+<p>The populated form contains three synthetic observations. The empty
+form has no data rows.</p>
 </div>
 <div id="load-an-installed-example" class="section level2">
 <h2>Load an installed example</h2>
 <div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="fu">library</span>(form.model)</span>
-<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a>directory <span class="ot">&lt;-</span> <span class="fu">system.file</span>(<span class="st">&quot;examples&quot;</span>, <span class="at">package =</span> <span class="st">&quot;form.model&quot;</span>)</span>
-<span id="cb1-3"><a href="#cb1-3" tabindex="-1"></a>m <span class="ot">&lt;-</span> <span class="fu">load_form_model</span>(<span class="st">&quot;survey&quot;</span>, directory)</span>
-<span id="cb1-4"><a href="#cb1-4" tabindex="-1"></a>m</span>
-<span id="cb1-5"><a href="#cb1-5" tabindex="-1"></a><span class="co">#&gt; &lt;form_model&gt; survey @ 2026.1 (schema 1.0.0)</span></span>
-<span id="cb1-6"><a href="#cb1-6" tabindex="-1"></a><span class="co">#&gt; 15 fields; 2 sheets</span></span></code></pre></div>
-<p>The example ships under <code>inst/examples/</code>, so it remains
-available after installation.</p>
-<p>The name <code>survey</code> resolves to
-<code>survey-form.yaml</code> in that directory. This is the standard
-naming convention.</p>
+<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a><span class="co"># Load the bundled survey form model.</span></span>
+<span id="cb1-3"><a href="#cb1-3" tabindex="-1"></a>model_definition <span class="ot">&lt;-</span> <span class="fu">read_form_model</span>(<span class="st">&quot;examples/survey/form.yaml&quot;</span>, <span class="st">&quot;form.model&quot;</span>)</span>
+<span id="cb1-4"><a href="#cb1-4" tabindex="-1"></a><span class="co"># Display its identity and worksheet summary.</span></span>
+<span id="cb1-5"><a href="#cb1-5" tabindex="-1"></a>model_definition</span>
+<span id="cb1-6"><a href="#cb1-6" tabindex="-1"></a><span class="co">#&gt; &lt;form_model&gt; survey @ 2026.2 (schema 1.0.0)</span></span>
+<span id="cb1-7"><a href="#cb1-7" tabindex="-1"></a><span class="co">#&gt; 34 fields; 6 sheets</span></span></code></pre></div>
+<p>The example ships under <code>inst/examples/survey/</code>, so it
+remains available after installation.</p>
+<p>The example reads <code>form.yaml</code> from that directory.</p>
 <p>Choose the version directory explicitly; the loader never searches
 for a latest version.</p>
 <p><code>read_form_model(path, package)</code> remains available when
 you need to load an explicit filename.</p>
+<p>To require an exact form identity and version:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="co"># Select the survey definition with the exact requested version.</span></span>
+<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a><span class="fu">select_form_model</span>(</span>
+<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a>  <span class="st">&quot;examples/survey/form.yaml&quot;</span>, <span class="st">&quot;survey&quot;</span>, <span class="st">&quot;2026.2&quot;</span>,</span>
+<span id="cb2-4"><a href="#cb2-4" tabindex="-1"></a>  <span class="at">package =</span> <span class="st">&quot;form.model&quot;</span></span>
+<span id="cb2-5"><a href="#cb2-5" tabindex="-1"></a>)</span>
+<span id="cb2-6"><a href="#cb2-6" tabindex="-1"></a><span class="co">#&gt; &lt;form_model&gt; survey @ 2026.2 (schema 1.0.0)</span></span>
+<span id="cb2-7"><a href="#cb2-7" tabindex="-1"></a><span class="co">#&gt; 34 fields; 6 sheets</span></span></code></pre></div>
 </div>
-<div id="what-a-model-contains" class="section level2">
-<h2>What a model contains</h2>
+<div id="what-a-form-model-contains" class="section level2">
+<h2>What a form model contains</h2>
 <p>A <code>form_model</code> is the checked definition itself, with an
 S3 class:</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="fu">names</span>(m)</span>
-<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a><span class="co">#&gt; [1] &quot;schema_version&quot; &quot;form&quot;           &quot;references&quot;     &quot;sheets&quot;</span></span></code></pre></div>
-<p>It directly contains the form identity, versions, references, and
-sheets.</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="co"># Inspect the top-level form model properties.</span></span>
+<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a><span class="fu">names</span>(model_definition)</span>
+<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a><span class="co">#&gt; [1] &quot;schema_version&quot; &quot;form&quot;           &quot;references&quot;     &quot;sheets&quot;</span></span></code></pre></div>
+<p>It directly contains the form identity, versions, reference
+declarations, and sheets.</p>
 <p>Sheets use worksheet names, and their fields use local field
 names:</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="fu">names</span>(m<span class="sc">$</span>sheets)</span>
-<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a><span class="co">#&gt; [1] &quot;Metadata&quot;     &quot;Observations&quot;</span></span>
-<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a><span class="fu">names</span>(m<span class="sc">$</span>sheets<span class="sc">$</span>Metadata<span class="sc">$</span>fields)</span>
-<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a><span class="co">#&gt; [1] &quot;submission&quot;    &quot;date&quot;          &quot;contact_email&quot; &quot;comment&quot;</span></span>
-<span id="cb3-5"><a href="#cb3-5" tabindex="-1"></a>m<span class="sc">$</span>sheets<span class="sc">$</span>Metadata<span class="sc">$</span>fields<span class="sc">$</span>submission[<span class="fu">c</span>(<span class="st">&quot;mandatory&quot;</span>, <span class="st">&quot;location&quot;</span>, <span class="st">&quot;type&quot;</span>)]</span>
-<span id="cb3-6"><a href="#cb3-6" tabindex="-1"></a><span class="co">#&gt; $mandatory</span></span>
-<span id="cb3-7"><a href="#cb3-7" tabindex="-1"></a><span class="co">#&gt; [1] TRUE</span></span>
-<span id="cb3-8"><a href="#cb3-8" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb3-9"><a href="#cb3-9" tabindex="-1"></a><span class="co">#&gt; $location</span></span>
-<span id="cb3-10"><a href="#cb3-10" tabindex="-1"></a><span class="co">#&gt; [1] &quot;C2&quot;</span></span>
-<span id="cb3-11"><a href="#cb3-11" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb3-12"><a href="#cb3-12" tabindex="-1"></a><span class="co">#&gt; $type</span></span>
-<span id="cb3-13"><a href="#cb3-13" tabindex="-1"></a><span class="co">#&gt; [1] &quot;string&quot;</span></span></code></pre></div>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a><span class="co"># List the worksheets in declaration order.</span></span>
+<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a><span class="fu">names</span>(model_definition<span class="sc">$</span>sheets)</span>
+<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a><span class="co">#&gt; [1] &quot;Metadata&quot;     &quot;Observations&quot; &quot;Samples&quot;      &quot;Measurements&quot; &quot;Equipment&quot;   </span></span>
+<span id="cb4-4"><a href="#cb4-4" tabindex="-1"></a><span class="co">#&gt; [6] &quot;Notes&quot;</span></span>
+<span id="cb4-5"><a href="#cb4-5" tabindex="-1"></a><span class="co"># List the metadata fields in declaration order.</span></span>
+<span id="cb4-6"><a href="#cb4-6" tabindex="-1"></a><span class="fu">names</span>(model_definition<span class="sc">$</span>sheets<span class="sc">$</span>Metadata<span class="sc">$</span>fields)</span>
+<span id="cb4-7"><a href="#cb4-7" tabindex="-1"></a><span class="co">#&gt; [1] &quot;submission&quot;    &quot;date&quot;          &quot;contact_email&quot; &quot;comment&quot;</span></span>
+<span id="cb4-8"><a href="#cb4-8" tabindex="-1"></a><span class="co"># Inspect the submission identifier&#39;s requiredness, cell and type.</span></span>
+<span id="cb4-9"><a href="#cb4-9" tabindex="-1"></a>model_definition<span class="sc">$</span>sheets<span class="sc">$</span>Metadata<span class="sc">$</span>fields<span class="sc">$</span>submission[<span class="fu">c</span>(<span class="st">&quot;mandatory&quot;</span>, <span class="st">&quot;location&quot;</span>, <span class="st">&quot;type&quot;</span>)]</span>
+<span id="cb4-10"><a href="#cb4-10" tabindex="-1"></a><span class="co">#&gt; $mandatory</span></span>
+<span id="cb4-11"><a href="#cb4-11" tabindex="-1"></a><span class="co">#&gt; [1] TRUE</span></span>
+<span id="cb4-12"><a href="#cb4-12" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb4-13"><a href="#cb4-13" tabindex="-1"></a><span class="co">#&gt; $location</span></span>
+<span id="cb4-14"><a href="#cb4-14" tabindex="-1"></a><span class="co">#&gt; [1] &quot;C2&quot;</span></span>
+<span id="cb4-15"><a href="#cb4-15" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb4-16"><a href="#cb4-16" tabindex="-1"></a><span class="co">#&gt; $type</span></span>
+<span id="cb4-17"><a href="#cb4-17" tabindex="-1"></a><span class="co">#&gt; [1] &quot;string&quot;</span></span></code></pre></div>
 <p>The YAML path is used in loading errors, then discarded after a
 successful load.</p>
 <p>The S3 class selects the compact <code>print()</code> method shown
 above. It does not make the object immutable.</p>
 </div>
+<div id="inspect-field-constraints-and-locations" class="section level2">
+<h2>Inspect field constraints and locations</h2>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a><span class="co"># Inspect the observation unit&#39;s allowed values and required-field condition.</span></span>
+<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a><span class="fu">form_field</span>(model_definition, <span class="st">&quot;Observations.unit&quot;</span>)[<span class="fu">c</span>(<span class="st">&quot;enum&quot;</span>, <span class="st">&quot;required_field&quot;</span>)]</span>
+<span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a><span class="co">#&gt; $enum</span></span>
+<span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a><span class="co">#&gt; $enum[[1]]</span></span>
+<span id="cb5-5"><a href="#cb5-5" tabindex="-1"></a><span class="co">#&gt; [1] &quot;cm&quot;</span></span>
+<span id="cb5-6"><a href="#cb5-6" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb5-7"><a href="#cb5-7" tabindex="-1"></a><span class="co">#&gt; $enum[[2]]</span></span>
+<span id="cb5-8"><a href="#cb5-8" tabindex="-1"></a><span class="co">#&gt; [1] &quot;m&quot;</span></span>
+<span id="cb5-9"><a href="#cb5-9" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb5-10"><a href="#cb5-10" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb5-11"><a href="#cb5-11" tabindex="-1"></a><span class="co">#&gt; $required_field</span></span>
+<span id="cb5-12"><a href="#cb5-12" tabindex="-1"></a><span class="co">#&gt; [1] &quot;length&quot;</span></span>
+<span id="cb5-13"><a href="#cb5-13" tabindex="-1"></a><span class="co"># Inspect the station&#39;s reference binding.</span></span>
+<span id="cb5-14"><a href="#cb5-14" tabindex="-1"></a><span class="fu">form_field</span>(model_definition, <span class="st">&quot;Observations.station&quot;</span>)<span class="sc">$</span>reference</span>
+<span id="cb5-15"><a href="#cb5-15" tabindex="-1"></a><span class="co">#&gt; $catalogue</span></span>
+<span id="cb5-16"><a href="#cb5-16" tabindex="-1"></a><span class="co">#&gt; [1] &quot;code_lists&quot;</span></span>
+<span id="cb5-17"><a href="#cb5-17" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb5-18"><a href="#cb5-18" tabindex="-1"></a><span class="co">#&gt; $table</span></span>
+<span id="cb5-19"><a href="#cb5-19" tabindex="-1"></a><span class="co">#&gt; [1] &quot;stations&quot;</span></span>
+<span id="cb5-20"><a href="#cb5-20" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb5-21"><a href="#cb5-21" tabindex="-1"></a><span class="co">#&gt; $lookup</span></span>
+<span id="cb5-22"><a href="#cb5-22" tabindex="-1"></a><span class="co">#&gt; [1] &quot;code&quot;</span></span>
+<span id="cb5-23"><a href="#cb5-23" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb5-24"><a href="#cb5-24" tabindex="-1"></a><span class="co">#&gt; $severity</span></span>
+<span id="cb5-25"><a href="#cb5-25" tabindex="-1"></a><span class="co">#&gt; [1] &quot;error&quot;</span></span>
+<span id="cb5-26"><a href="#cb5-26" tabindex="-1"></a><span class="co"># Locate the first observation row in the form.</span></span>
+<span id="cb5-27"><a href="#cb5-27" tabindex="-1"></a><span class="fu">form_layout</span>(model_definition, <span class="st">&quot;Observations&quot;</span>)<span class="sc">$</span>start_row</span>
+<span id="cb5-28"><a href="#cb5-28" tabindex="-1"></a><span class="co">#&gt; [1] 6</span></span>
+<span id="cb5-29"><a href="#cb5-29" tabindex="-1"></a></span>
+<span id="cb5-30"><a href="#cb5-30" tabindex="-1"></a><span class="co"># Check the structure and consistency of the definition.</span></span>
+<span id="cb5-31"><a href="#cb5-31" tabindex="-1"></a><span class="fu">check_form_model</span>(<span class="fu">form_definition</span>(model_definition))</span>
+<span id="cb5-32"><a href="#cb5-32" tabindex="-1"></a><span class="co">#&gt; &lt;form_model_check&gt; valid</span></span></code></pre></div>
+</div>
 <div id="diagnose-a-definition" class="section level2">
 <h2>Diagnose a definition</h2>
-<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a>d <span class="ot">&lt;-</span> <span class="fu">form_definition</span>(m)</span>
-<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a>d<span class="sc">$</span>sheets[[<span class="dv">2</span>]]<span class="sc">$</span>fields[[<span class="dv">1</span>]]<span class="sc">$</span>reference <span class="ot">&lt;-</span> <span class="st">&quot;missing&quot;</span></span>
-<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a>result <span class="ot">&lt;-</span> <span class="fu">check_form_model</span>(d, <span class="at">resource =</span> <span class="st">&quot;my-definition.yaml&quot;</span>)</span>
-<span id="cb4-4"><a href="#cb4-4" tabindex="-1"></a>result<span class="sc">$</span>diagnostics</span>
-<span id="cb4-5"><a href="#cb4-5" tabindex="-1"></a><span class="co">#&gt;             resource                                           path</span></span>
-<span id="cb4-6"><a href="#cb4-6" tabindex="-1"></a><span class="co">#&gt; 1 my-definition.yaml $.sheets.Observations.fields.station.reference</span></span>
-<span id="cb4-7"><a href="#cb4-7" tabindex="-1"></a><span class="co">#&gt;                      message</span></span>
-<span id="cb4-8"><a href="#cb4-8" tabindex="-1"></a><span class="co">#&gt; 1 unknown reference: missing</span></span>
-<span id="cb4-9"><a href="#cb4-9" tabindex="-1"></a><span class="fu">stopifnot</span>(<span class="sc">!</span>result<span class="sc">$</span>valid)</span></code></pre></div>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a><span class="co"># Copy the definition for an invalid-reference example.</span></span>
+<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a>invalid_definition <span class="ot">&lt;-</span> <span class="fu">form_definition</span>(model_definition)</span>
+<span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a><span class="co"># Point the station binding at an undeclared table.</span></span>
+<span id="cb6-4"><a href="#cb6-4" tabindex="-1"></a>invalid_definition<span class="sc">$</span>sheets<span class="sc">$</span>Observations<span class="sc">$</span>fields<span class="sc">$</span>station<span class="sc">$</span>reference<span class="sc">$</span>table <span class="ot">&lt;-</span> <span class="st">&quot;missing&quot;</span></span>
+<span id="cb6-5"><a href="#cb6-5" tabindex="-1"></a></span>
+<span id="cb6-6"><a href="#cb6-6" tabindex="-1"></a><span class="co"># Check the changed definition without throwing an error.</span></span>
+<span id="cb6-7"><a href="#cb6-7" tabindex="-1"></a>definition_check <span class="ot">&lt;-</span> <span class="fu">check_form_model</span>(invalid_definition, <span class="at">resource =</span> <span class="st">&quot;my-definition.yaml&quot;</span>)</span>
+<span id="cb6-8"><a href="#cb6-8" tabindex="-1"></a><span class="co"># Display the reported form model errors.</span></span>
+<span id="cb6-9"><a href="#cb6-9" tabindex="-1"></a>definition_check<span class="sc">$</span>diagnostics</span>
+<span id="cb6-10"><a href="#cb6-10" tabindex="-1"></a><span class="co">#&gt;             resource                                                 path</span></span>
+<span id="cb6-11"><a href="#cb6-11" tabindex="-1"></a><span class="co">#&gt; 1 my-definition.yaml $.sheets.Observations.fields.station.reference.table</span></span>
+<span id="cb6-12"><a href="#cb6-12" tabindex="-1"></a><span class="co">#&gt;                            message</span></span>
+<span id="cb6-13"><a href="#cb6-13" tabindex="-1"></a><span class="co">#&gt; 1 unknown reference table: missing</span></span>
+<span id="cb6-14"><a href="#cb6-14" tabindex="-1"></a><span class="co"># Confirm that the changed definition was rejected.</span></span>
+<span id="cb6-15"><a href="#cb6-15" tabindex="-1"></a><span class="fu">stopifnot</span>(<span class="sc">!</span>definition_check<span class="sc">$</span>valid)</span></code></pre></div>
 <p><code>as_form_model()</code> and <code>read_form_model()</code> throw
 <code>model_form_error</code> when a definition is invalid.</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a>error <span class="ot">&lt;-</span> <span class="fu">tryCatch</span>(<span class="fu">as_form_model</span>(d, <span class="st">&quot;my-definition.yaml&quot;</span>), <span class="at">model_form_error =</span> identity)</span>
-<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a>error<span class="sc">$</span>path</span>
-<span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a><span class="co">#&gt; [1] &quot;$.sheets.Observations.fields.station.reference&quot;</span></span>
-<span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a>error<span class="sc">$</span>diagnostics</span>
-<span id="cb5-5"><a href="#cb5-5" tabindex="-1"></a><span class="co">#&gt;             resource                                           path</span></span>
-<span id="cb5-6"><a href="#cb5-6" tabindex="-1"></a><span class="co">#&gt; 1 my-definition.yaml $.sheets.Observations.fields.station.reference</span></span>
-<span id="cb5-7"><a href="#cb5-7" tabindex="-1"></a><span class="co">#&gt;                      message</span></span>
-<span id="cb5-8"><a href="#cb5-8" tabindex="-1"></a><span class="co">#&gt; 1 unknown reference: missing</span></span></code></pre></div>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a><span class="co"># Capture the error raised when constructing the invalid form model.</span></span>
+<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a>definition_error <span class="ot">&lt;-</span> <span class="fu">tryCatch</span>(</span>
+<span id="cb7-3"><a href="#cb7-3" tabindex="-1"></a>  <span class="fu">as_form_model</span>(invalid_definition, <span class="st">&quot;my-definition.yaml&quot;</span>), <span class="at">model_form_error =</span> identity)</span>
+<span id="cb7-4"><a href="#cb7-4" tabindex="-1"></a><span class="co"># Inspect the property that caused the error.</span></span>
+<span id="cb7-5"><a href="#cb7-5" tabindex="-1"></a>definition_error<span class="sc">$</span>path</span>
+<span id="cb7-6"><a href="#cb7-6" tabindex="-1"></a><span class="co">#&gt; [1] &quot;$.sheets.Observations.fields.station.reference.table&quot;</span></span>
+<span id="cb7-7"><a href="#cb7-7" tabindex="-1"></a><span class="co"># Inspect the full set of definition errors.</span></span>
+<span id="cb7-8"><a href="#cb7-8" tabindex="-1"></a>definition_error<span class="sc">$</span>diagnostics</span>
+<span id="cb7-9"><a href="#cb7-9" tabindex="-1"></a><span class="co">#&gt;             resource                                                 path</span></span>
+<span id="cb7-10"><a href="#cb7-10" tabindex="-1"></a><span class="co">#&gt; 1 my-definition.yaml $.sheets.Observations.fields.station.reference.table</span></span>
+<span id="cb7-11"><a href="#cb7-11" tabindex="-1"></a><span class="co">#&gt;                            message</span></span>
+<span id="cb7-12"><a href="#cb7-12" tabindex="-1"></a><span class="co">#&gt; 1 unknown reference table: missing</span></span></code></pre></div>
 </div>
 <div id="read-next" class="section level2">
 <h2>Read next</h2>
@@ -424,9 +489,8 @@ create your own form.</li>
 <li><a href="model-specification.html">Model specification</a>: field
 types, constraints and layouts.</li>
 <li><a href="downstream-packages.html">Distributing models</a>: use
-models in another package.</li>
-<li><a href="https://ultreia-io.github.io/form.model/reference/index.html">Function
-reference</a>: API details.</li>
+models in another package. Open the function reference with
+<code>help(package = &quot;form.model&quot;)</code>.</li>
 </ul>
 </div>
 

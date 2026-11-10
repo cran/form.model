@@ -10,7 +10,8 @@ form_definition(model)
 \item{model}{A checked \code{form_model} from \code{\link[=read_form_model]{read_form_model()}} or \code{\link[=as_form_model]{as_form_model()}}.}
 }
 \value{
-An ordinary list with \code{schema_version}, \code{form}, \code{references} and \code{sheets}.
+An ordinary model definition with \code{form}, \code{sheets}, and
+\code{references} containing named catalogues and their declared tables.
 }
 \description{
 Get the complete definition
@@ -20,6 +21,8 @@ Accessors preserve declaration order and do not revalidate models.
 Treat checked models as read-only. Invalid model arguments raise \code{model_form_error}.
 }
 \examples{
-model <- read_form_model("examples/survey-form.yaml", "form.model")
-form_definition(model)$form
+# Load the bundled survey model.
+model_definition <- read_form_model("examples/survey/form.yaml", "form.model")
+# Inspect the declared form identity.
+form_definition(model_definition)$form
 }

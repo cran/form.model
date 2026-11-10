@@ -1,0 +1,75 @@
+schema_version: 1.0.0
+form:
+  id: survey
+  version: '2026.2'
+references:
+  code_lists:
+    - observers
+    - stations
+  registries:
+    - contacts
+sheets:
+  # Fixed cells with an exact physical sheet size.
+  Metadata:
+    layout: {kind: cells, column_count: 3, row_count: 5}
+    fields:
+      submission: {mandatory: true, location: C2, type: string, pattern: '^[0-9]{3}$'}
+      date: {mandatory: true, location: C3, type: date}
+      contact_email: {location: C4, type: email, reference: {catalogue: registries, table: contacts, lookup: email, severity: warning}}
+      comment: {location: C5, type: string}
+  # Repeated rows; field declaration order determines column order.
+  Observations:
+    layout: {kind: table, start_row: 6}
+    primary_key: [station, observation_id]
+    fields:
+      station: {mandatory: true, type: string, reference: {catalogue: code_lists, table: stations, lookup: code}}
+      count: {mandatory: true, type: integer, minimum: 0, maximum: 1000}
+      length: {type: number, minimum: 0}
+      unit: {type: string, required_field: length, enum: [cm, m]}
+      active: {mandatory: true, type: boolean}
+      observed_at: {type: datetime}
+      latitude: {type: latitude}
+      longitude: {type: longitude}
+      observation_id: {type: string, pattern: '^OBS-[0-9]{3}$'}
+      quality: {type: integer, enum: [1, 2, 3]}
+      observer: {type: string, reference: {catalogue: code_lists, table: observers, lookup: code, severity: warning}}
+  Samples:
+    layout: {kind: table, start_row: 6}
+    primary_key: [station, observation_id, sample_no]
+    parent_key: {sheet: Observations, fields: [station, observation_id]}
+    fields:
+      station: {mandatory: true, type: string}
+      observation_id: {mandatory: true, type: string}
+      sample_no: {mandatory: true, type: integer, sequence: {start: 1, group_by: [station, observation_id]}}
+      minimum_length: {type: number, minimum: 0, maximum_field: maximum_length}
+      maximum_length: {type: number, minimum: 0}
+      unit: {type: string, required_field: minimum_length, enum: [cm, m]}
+  Measurements:
+    layout: {kind: table, start_row: 6}
+    primary_key: [station, observation_id, sample_no, reading_no]
+    parent_key: {sheet: Samples, fields: [station, observation_id, sample_no]}
+    fields:
+      station: {mandatory: true, type: string}
+      observation_id: {mandatory: true, type: string}
+      sample_no: {mandatory: true, type: integer}
+      reading_no: {mandatory: true, type: integer, sequence: {start: 1, group_by: [station, observation_id, sample_no]}}
+      value: {mandatory: true, type: number, minimum: 0}
+  Equipment:
+    layout: {kind: table, start_row: 6}
+    primary_key: [equipment_id]
+    fields:
+      equipment_id: {mandatory: true, type: string}
+      serial: {mandatory: true, type: string, unique: true}
+      label: {mandatory: true, type: string}
+  # Optional child details: complete keys must be unique; empty information warns.
+  Notes:
+    layout: {kind: table, start_row: 6}
+    parent_key: {sheet: Observations, fields: [station, observation_id]}
+    unique_key: [station, observation_id, category]
+    at_least_one: {fields: [category, count, confirmed], severity: warning}
+    fields:
+      station: {mandatory: true, type: string}
+      observation_id: {mandatory: true, type: string}
+      category: {type: string}
+      count: {type: integer, minimum: 0}
+      confirmed: {type: boolean}

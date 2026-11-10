@@ -43,18 +43,29 @@ definitions:
       version:
         ref: version
   reference_use:
-    shorthand: {ref: id}
     type: mapping
-    required:
-    - id
+    required: [catalogue, table, lookup]
     properties:
-      id:
+      catalogue:
+        ref: id
+      table:
+        ref: id
+      lookup:
         ref: id
       severity:
         type: string
-        enum:
-        - error
-        - warning
+        enum: [error, warning]
+  sequence_rule:
+    type: mapping
+    required: [start, group_by]
+    properties:
+      start:
+        type: integer
+      group_by:
+        type: sequence
+        items:
+          ref: id
+        min_items: 1
   field:
     type: mapping
     required:
@@ -78,6 +89,10 @@ definitions:
         ref: number
       maximum:
         ref: number
+      maximum_field:
+        ref: id
+      sequence:
+        ref: sequence_rule
       pattern:
         ref: text
       unique:
@@ -106,6 +121,17 @@ definitions:
         ref: count
       row_count:
         ref: count
+  parent_key:
+    type: mapping
+    required: [sheet, fields]
+    properties:
+      sheet:
+        ref: id
+      fields:
+        type: sequence
+        items:
+          ref: id
+        min_items: 1
   sheet:
     type: mapping
     required:
@@ -114,6 +140,30 @@ definitions:
     properties:
       layout:
         ref: layout
+      parent_key:
+        ref: parent_key
+      primary_key:
+        type: sequence
+        items:
+          ref: id
+        min_items: 1
+      unique_key:
+        type: sequence
+        items:
+          ref: id
+        min_items: 1
+      at_least_one:
+        type: mapping
+        required: [fields]
+        properties:
+          fields:
+            type: sequence
+            items:
+              ref: id
+            min_items: 1
+          severity:
+            type: string
+            enum: [error, warning, info]
       fields:
         ref: fields
   sheets:
@@ -122,6 +172,17 @@ definitions:
     values:
       ref: sheet
     min_items: 1
+  reference_ids:
+    type: sequence
+    items:
+      ref: id
+    min_items: 0
+  references:
+    type: mapping
+    key_pattern: ^[A-Za-z][A-Za-z0-9_.-]*$
+    values:
+      ref: reference_ids
+    min_items: 0
   model:
     type: mapping
     required:
@@ -137,9 +198,6 @@ definitions:
       form:
         ref: form
       references:
-        type: sequence
-        items:
-          ref: id
-        min_items: 0
+        ref: references
       sheets:
         ref: sheets

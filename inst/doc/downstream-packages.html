@@ -48,8 +48,9 @@ overflow: visible;
 }
 </style>
 <style type="text/css" data-origin="pandoc">
+html { -webkit-text-size-adjust: 100%; }
 pre > code.sourceCode { white-space: pre; position: relative; }
-pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
 pre > code.sourceCode > span:empty { height: 1.2em; }
 .sourceCode { overflow: visible; }
 code.sourceCode > span { color: inherit; text-decoration: inherit; }
@@ -354,14 +355,15 @@ same named model.</p>
   inst/forms/survey-form.yaml</code></pre>
 <p>Declare <code>Imports: form.model</code> in <code>DESCRIPTION</code>.
 Supply a documented wrapper with explicit resource selection.</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="co"># In exampleforms/R/survey.R:</span></span>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="co"># Expose the packaged survey definition through a domain-specific function.</span></span>
 <span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a>survey_model <span class="ot">&lt;-</span> <span class="cf">function</span>() {</span>
-<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a>  form.model<span class="sc">::</span><span class="fu">select_form_model</span>(</span>
-<span id="cb2-4"><a href="#cb2-4" tabindex="-1"></a>    <span class="st">&quot;forms/survey-form.yaml&quot;</span>,</span>
-<span id="cb2-5"><a href="#cb2-5" tabindex="-1"></a>    <span class="at">id =</span> <span class="st">&quot;survey&quot;</span>, <span class="at">version =</span> <span class="st">&quot;2026.1&quot;</span>,</span>
-<span id="cb2-6"><a href="#cb2-6" tabindex="-1"></a>    <span class="at">package =</span> <span class="st">&quot;exampleforms&quot;</span></span>
-<span id="cb2-7"><a href="#cb2-7" tabindex="-1"></a>  )</span>
-<span id="cb2-8"><a href="#cb2-8" tabindex="-1"></a>}</span></code></pre></div>
+<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a>  <span class="co"># Select the packaged survey definition with its exact identity and version.</span></span>
+<span id="cb2-4"><a href="#cb2-4" tabindex="-1"></a>  form.model<span class="sc">::</span><span class="fu">select_form_model</span>(</span>
+<span id="cb2-5"><a href="#cb2-5" tabindex="-1"></a>    <span class="st">&quot;forms/survey-form.yaml&quot;</span>,</span>
+<span id="cb2-6"><a href="#cb2-6" tabindex="-1"></a>    <span class="at">id =</span> <span class="st">&quot;survey&quot;</span>, <span class="at">version =</span> <span class="st">&quot;2026.2&quot;</span>,</span>
+<span id="cb2-7"><a href="#cb2-7" tabindex="-1"></a>    <span class="at">package =</span> <span class="st">&quot;exampleforms&quot;</span></span>
+<span id="cb2-8"><a href="#cb2-8" tabindex="-1"></a>  )</span>
+<span id="cb2-9"><a href="#cb2-9" tabindex="-1"></a>}</span></code></pre></div>
 <p><code>package</code> names the installed package containing the YAML
 resource.</p>
 </div>
@@ -369,11 +371,25 @@ resource.</p>
 <h2>Runnable equivalent</h2>
 <p>The bundled example uses exactly the same installed-resource
 mechanism.</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a>path <span class="ot">&lt;-</span> <span class="fu">form_resource</span>(<span class="st">&quot;examples/survey-form.yaml&quot;</span>, <span class="st">&quot;form.model&quot;</span>)</span>
-<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a><span class="fu">stopifnot</span>(<span class="fu">file.exists</span>(path))</span>
-<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a>m <span class="ot">&lt;-</span> <span class="fu">select_form_model</span>(path, <span class="st">&quot;survey&quot;</span>, <span class="st">&quot;2026.1&quot;</span>)</span>
-<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a><span class="fu">form_references</span>(m)</span>
-<span id="cb3-5"><a href="#cb3-5" tabindex="-1"></a><span class="co">#&gt; [1] &quot;observers&quot; &quot;stations&quot;</span></span></code></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="co"># Locate the installed survey definition.</span></span>
+<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a>model_resource_path <span class="ot">&lt;-</span> <span class="fu">form_resource</span>(<span class="st">&quot;examples/survey/form.yaml&quot;</span>, <span class="st">&quot;form.model&quot;</span>)</span>
+<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a><span class="co"># Confirm that the installed resource exists.</span></span>
+<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a><span class="fu">stopifnot</span>(<span class="fu">file.exists</span>(model_resource_path))</span>
+<span id="cb3-5"><a href="#cb3-5" tabindex="-1"></a><span class="co"># Load the definition with the exact survey identity and version.</span></span>
+<span id="cb3-6"><a href="#cb3-6" tabindex="-1"></a>model_definition <span class="ot">&lt;-</span> <span class="fu">select_form_model</span>(model_resource_path, <span class="st">&quot;survey&quot;</span>, <span class="st">&quot;2026.2&quot;</span>)</span>
+<span id="cb3-7"><a href="#cb3-7" tabindex="-1"></a><span class="co"># Inspect its catalogue and table requirements.</span></span>
+<span id="cb3-8"><a href="#cb3-8" tabindex="-1"></a><span class="fu">form_references</span>(model_definition)</span>
+<span id="cb3-9"><a href="#cb3-9" tabindex="-1"></a><span class="co">#&gt; $code_lists</span></span>
+<span id="cb3-10"><a href="#cb3-10" tabindex="-1"></a><span class="co">#&gt; $code_lists[[1]]</span></span>
+<span id="cb3-11"><a href="#cb3-11" tabindex="-1"></a><span class="co">#&gt; [1] &quot;observers&quot;</span></span>
+<span id="cb3-12"><a href="#cb3-12" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb3-13"><a href="#cb3-13" tabindex="-1"></a><span class="co">#&gt; $code_lists[[2]]</span></span>
+<span id="cb3-14"><a href="#cb3-14" tabindex="-1"></a><span class="co">#&gt; [1] &quot;stations&quot;</span></span>
+<span id="cb3-15"><a href="#cb3-15" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb3-16"><a href="#cb3-16" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb3-17"><a href="#cb3-17" tabindex="-1"></a><span class="co">#&gt; $registries</span></span>
+<span id="cb3-18"><a href="#cb3-18" tabindex="-1"></a><span class="co">#&gt; $registries[[1]]</span></span>
+<span id="cb3-19"><a href="#cb3-19" tabindex="-1"></a><span class="co">#&gt; [1] &quot;contacts&quot;</span></span></code></pre></div>
 <p>Selection reads only supplied paths, validates all of them, and
 requires exactly one matching identity tuple.</p>
 <p>Supply an explicit list of files to support multiple versions. There
@@ -383,295 +399,305 @@ through symbolic links.</p>
 </div>
 <div id="inspect-fields-and-locations" class="section level2">
 <h2>Inspect fields and locations</h2>
-<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a><span class="fu">form_fields</span>(m, <span class="at">sheet =</span> <span class="st">&quot;Observations&quot;</span>)</span>
-<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a><span class="co">#&gt; $Observations.station</span></span>
-<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a><span class="co">#&gt; $Observations.station$mandatory</span></span>
-<span id="cb4-4"><a href="#cb4-4" tabindex="-1"></a><span class="co">#&gt; [1] TRUE</span></span>
-<span id="cb4-5"><a href="#cb4-5" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb4-6"><a href="#cb4-6" tabindex="-1"></a><span class="co">#&gt; $Observations.station$type</span></span>
-<span id="cb4-7"><a href="#cb4-7" tabindex="-1"></a><span class="co">#&gt; [1] &quot;string&quot;</span></span>
-<span id="cb4-8"><a href="#cb4-8" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb4-9"><a href="#cb4-9" tabindex="-1"></a><span class="co">#&gt; $Observations.station$reference</span></span>
-<span id="cb4-10"><a href="#cb4-10" tabindex="-1"></a><span class="co">#&gt; $Observations.station$reference$id</span></span>
-<span id="cb4-11"><a href="#cb4-11" tabindex="-1"></a><span class="co">#&gt; [1] &quot;stations&quot;</span></span>
-<span id="cb4-12"><a href="#cb4-12" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb4-13"><a href="#cb4-13" tabindex="-1"></a><span class="co">#&gt; $Observations.station$reference$severity</span></span>
-<span id="cb4-14"><a href="#cb4-14" tabindex="-1"></a><span class="co">#&gt; [1] &quot;error&quot;</span></span>
-<span id="cb4-15"><a href="#cb4-15" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a><span class="co"># Inspect observation fields in workbook column order.</span></span>
+<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a><span class="fu">form_fields</span>(model_definition, <span class="at">sheet =</span> <span class="st">&quot;Observations&quot;</span>)</span>
+<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a><span class="co">#&gt; $Observations.station</span></span>
+<span id="cb4-4"><a href="#cb4-4" tabindex="-1"></a><span class="co">#&gt; $Observations.station$mandatory</span></span>
+<span id="cb4-5"><a href="#cb4-5" tabindex="-1"></a><span class="co">#&gt; [1] TRUE</span></span>
+<span id="cb4-6"><a href="#cb4-6" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb4-7"><a href="#cb4-7" tabindex="-1"></a><span class="co">#&gt; $Observations.station$type</span></span>
+<span id="cb4-8"><a href="#cb4-8" tabindex="-1"></a><span class="co">#&gt; [1] &quot;string&quot;</span></span>
+<span id="cb4-9"><a href="#cb4-9" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb4-10"><a href="#cb4-10" tabindex="-1"></a><span class="co">#&gt; $Observations.station$reference</span></span>
+<span id="cb4-11"><a href="#cb4-11" tabindex="-1"></a><span class="co">#&gt; $Observations.station$reference$catalogue</span></span>
+<span id="cb4-12"><a href="#cb4-12" tabindex="-1"></a><span class="co">#&gt; [1] &quot;code_lists&quot;</span></span>
+<span id="cb4-13"><a href="#cb4-13" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb4-14"><a href="#cb4-14" tabindex="-1"></a><span class="co">#&gt; $Observations.station$reference$table</span></span>
+<span id="cb4-15"><a href="#cb4-15" tabindex="-1"></a><span class="co">#&gt; [1] &quot;stations&quot;</span></span>
 <span id="cb4-16"><a href="#cb4-16" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb4-17"><a href="#cb4-17" tabindex="-1"></a><span class="co">#&gt; $Observations.station$id</span></span>
-<span id="cb4-18"><a href="#cb4-18" tabindex="-1"></a><span class="co">#&gt; [1] &quot;Observations.station&quot;</span></span>
+<span id="cb4-17"><a href="#cb4-17" tabindex="-1"></a><span class="co">#&gt; $Observations.station$reference$lookup</span></span>
+<span id="cb4-18"><a href="#cb4-18" tabindex="-1"></a><span class="co">#&gt; [1] &quot;code&quot;</span></span>
 <span id="cb4-19"><a href="#cb4-19" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb4-20"><a href="#cb4-20" tabindex="-1"></a><span class="co">#&gt; $Observations.station$name</span></span>
-<span id="cb4-21"><a href="#cb4-21" tabindex="-1"></a><span class="co">#&gt; [1] &quot;station&quot;</span></span>
+<span id="cb4-20"><a href="#cb4-20" tabindex="-1"></a><span class="co">#&gt; $Observations.station$reference$severity</span></span>
+<span id="cb4-21"><a href="#cb4-21" tabindex="-1"></a><span class="co">#&gt; [1] &quot;error&quot;</span></span>
 <span id="cb4-22"><a href="#cb4-22" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb4-23"><a href="#cb4-23" tabindex="-1"></a><span class="co">#&gt; $Observations.station$sheet</span></span>
-<span id="cb4-24"><a href="#cb4-24" tabindex="-1"></a><span class="co">#&gt; [1] &quot;Observations&quot;</span></span>
-<span id="cb4-25"><a href="#cb4-25" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb4-26"><a href="#cb4-26" tabindex="-1"></a><span class="co">#&gt; $Observations.station$column</span></span>
-<span id="cb4-27"><a href="#cb4-27" tabindex="-1"></a><span class="co">#&gt; [1] 1</span></span>
-<span id="cb4-28"><a href="#cb4-28" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb4-23"><a href="#cb4-23" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb4-24"><a href="#cb4-24" tabindex="-1"></a><span class="co">#&gt; $Observations.station$id</span></span>
+<span id="cb4-25"><a href="#cb4-25" tabindex="-1"></a><span class="co">#&gt; [1] &quot;Observations.station&quot;</span></span>
+<span id="cb4-26"><a href="#cb4-26" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb4-27"><a href="#cb4-27" tabindex="-1"></a><span class="co">#&gt; $Observations.station$name</span></span>
+<span id="cb4-28"><a href="#cb4-28" tabindex="-1"></a><span class="co">#&gt; [1] &quot;station&quot;</span></span>
 <span id="cb4-29"><a href="#cb4-29" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb4-30"><a href="#cb4-30" tabindex="-1"></a><span class="co">#&gt; $Observations.count</span></span>
-<span id="cb4-31"><a href="#cb4-31" tabindex="-1"></a><span class="co">#&gt; $Observations.count$mandatory</span></span>
-<span id="cb4-32"><a href="#cb4-32" tabindex="-1"></a><span class="co">#&gt; [1] TRUE</span></span>
-<span id="cb4-33"><a href="#cb4-33" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb4-34"><a href="#cb4-34" tabindex="-1"></a><span class="co">#&gt; $Observations.count$type</span></span>
-<span id="cb4-35"><a href="#cb4-35" tabindex="-1"></a><span class="co">#&gt; [1] &quot;integer&quot;</span></span>
+<span id="cb4-30"><a href="#cb4-30" tabindex="-1"></a><span class="co">#&gt; $Observations.station$sheet</span></span>
+<span id="cb4-31"><a href="#cb4-31" tabindex="-1"></a><span class="co">#&gt; [1] &quot;Observations&quot;</span></span>
+<span id="cb4-32"><a href="#cb4-32" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb4-33"><a href="#cb4-33" tabindex="-1"></a><span class="co">#&gt; $Observations.station$column</span></span>
+<span id="cb4-34"><a href="#cb4-34" tabindex="-1"></a><span class="co">#&gt; [1] 1</span></span>
+<span id="cb4-35"><a href="#cb4-35" tabindex="-1"></a><span class="co">#&gt; </span></span>
 <span id="cb4-36"><a href="#cb4-36" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb4-37"><a href="#cb4-37" tabindex="-1"></a><span class="co">#&gt; $Observations.count$minimum</span></span>
-<span id="cb4-38"><a href="#cb4-38" tabindex="-1"></a><span class="co">#&gt; [1] 0</span></span>
-<span id="cb4-39"><a href="#cb4-39" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb4-40"><a href="#cb4-40" tabindex="-1"></a><span class="co">#&gt; $Observations.count$maximum</span></span>
-<span id="cb4-41"><a href="#cb4-41" tabindex="-1"></a><span class="co">#&gt; [1] 1000</span></span>
-<span id="cb4-42"><a href="#cb4-42" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb4-43"><a href="#cb4-43" tabindex="-1"></a><span class="co">#&gt; $Observations.count$id</span></span>
-<span id="cb4-44"><a href="#cb4-44" tabindex="-1"></a><span class="co">#&gt; [1] &quot;Observations.count&quot;</span></span>
-<span id="cb4-45"><a href="#cb4-45" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb4-46"><a href="#cb4-46" tabindex="-1"></a><span class="co">#&gt; $Observations.count$name</span></span>
-<span id="cb4-47"><a href="#cb4-47" tabindex="-1"></a><span class="co">#&gt; [1] &quot;count&quot;</span></span>
-<span id="cb4-48"><a href="#cb4-48" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb4-49"><a href="#cb4-49" tabindex="-1"></a><span class="co">#&gt; $Observations.count$sheet</span></span>
-<span id="cb4-50"><a href="#cb4-50" tabindex="-1"></a><span class="co">#&gt; [1] &quot;Observations&quot;</span></span>
-<span id="cb4-51"><a href="#cb4-51" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb4-52"><a href="#cb4-52" tabindex="-1"></a><span class="co">#&gt; $Observations.count$column</span></span>
-<span id="cb4-53"><a href="#cb4-53" tabindex="-1"></a><span class="co">#&gt; [1] 2</span></span>
-<span id="cb4-54"><a href="#cb4-54" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb4-37"><a href="#cb4-37" tabindex="-1"></a><span class="co">#&gt; $Observations.count</span></span>
+<span id="cb4-38"><a href="#cb4-38" tabindex="-1"></a><span class="co">#&gt; $Observations.count$mandatory</span></span>
+<span id="cb4-39"><a href="#cb4-39" tabindex="-1"></a><span class="co">#&gt; [1] TRUE</span></span>
+<span id="cb4-40"><a href="#cb4-40" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb4-41"><a href="#cb4-41" tabindex="-1"></a><span class="co">#&gt; $Observations.count$type</span></span>
+<span id="cb4-42"><a href="#cb4-42" tabindex="-1"></a><span class="co">#&gt; [1] &quot;integer&quot;</span></span>
+<span id="cb4-43"><a href="#cb4-43" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb4-44"><a href="#cb4-44" tabindex="-1"></a><span class="co">#&gt; $Observations.count$minimum</span></span>
+<span id="cb4-45"><a href="#cb4-45" tabindex="-1"></a><span class="co">#&gt; [1] 0</span></span>
+<span id="cb4-46"><a href="#cb4-46" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb4-47"><a href="#cb4-47" tabindex="-1"></a><span class="co">#&gt; $Observations.count$maximum</span></span>
+<span id="cb4-48"><a href="#cb4-48" tabindex="-1"></a><span class="co">#&gt; [1] 1000</span></span>
+<span id="cb4-49"><a href="#cb4-49" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb4-50"><a href="#cb4-50" tabindex="-1"></a><span class="co">#&gt; $Observations.count$id</span></span>
+<span id="cb4-51"><a href="#cb4-51" tabindex="-1"></a><span class="co">#&gt; [1] &quot;Observations.count&quot;</span></span>
+<span id="cb4-52"><a href="#cb4-52" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb4-53"><a href="#cb4-53" tabindex="-1"></a><span class="co">#&gt; $Observations.count$name</span></span>
+<span id="cb4-54"><a href="#cb4-54" tabindex="-1"></a><span class="co">#&gt; [1] &quot;count&quot;</span></span>
 <span id="cb4-55"><a href="#cb4-55" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb4-56"><a href="#cb4-56" tabindex="-1"></a><span class="co">#&gt; $Observations.length</span></span>
-<span id="cb4-57"><a href="#cb4-57" tabindex="-1"></a><span class="co">#&gt; $Observations.length$type</span></span>
-<span id="cb4-58"><a href="#cb4-58" tabindex="-1"></a><span class="co">#&gt; [1] &quot;number&quot;</span></span>
-<span id="cb4-59"><a href="#cb4-59" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb4-60"><a href="#cb4-60" tabindex="-1"></a><span class="co">#&gt; $Observations.length$minimum</span></span>
-<span id="cb4-61"><a href="#cb4-61" tabindex="-1"></a><span class="co">#&gt; [1] 0</span></span>
+<span id="cb4-56"><a href="#cb4-56" tabindex="-1"></a><span class="co">#&gt; $Observations.count$sheet</span></span>
+<span id="cb4-57"><a href="#cb4-57" tabindex="-1"></a><span class="co">#&gt; [1] &quot;Observations&quot;</span></span>
+<span id="cb4-58"><a href="#cb4-58" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb4-59"><a href="#cb4-59" tabindex="-1"></a><span class="co">#&gt; $Observations.count$column</span></span>
+<span id="cb4-60"><a href="#cb4-60" tabindex="-1"></a><span class="co">#&gt; [1] 2</span></span>
+<span id="cb4-61"><a href="#cb4-61" tabindex="-1"></a><span class="co">#&gt; </span></span>
 <span id="cb4-62"><a href="#cb4-62" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb4-63"><a href="#cb4-63" tabindex="-1"></a><span class="co">#&gt; $Observations.length$id</span></span>
-<span id="cb4-64"><a href="#cb4-64" tabindex="-1"></a><span class="co">#&gt; [1] &quot;Observations.length&quot;</span></span>
-<span id="cb4-65"><a href="#cb4-65" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb4-66"><a href="#cb4-66" tabindex="-1"></a><span class="co">#&gt; $Observations.length$name</span></span>
-<span id="cb4-67"><a href="#cb4-67" tabindex="-1"></a><span class="co">#&gt; [1] &quot;length&quot;</span></span>
-<span id="cb4-68"><a href="#cb4-68" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb4-69"><a href="#cb4-69" tabindex="-1"></a><span class="co">#&gt; $Observations.length$sheet</span></span>
-<span id="cb4-70"><a href="#cb4-70" tabindex="-1"></a><span class="co">#&gt; [1] &quot;Observations&quot;</span></span>
-<span id="cb4-71"><a href="#cb4-71" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb4-72"><a href="#cb4-72" tabindex="-1"></a><span class="co">#&gt; $Observations.length$mandatory</span></span>
-<span id="cb4-73"><a href="#cb4-73" tabindex="-1"></a><span class="co">#&gt; [1] FALSE</span></span>
-<span id="cb4-74"><a href="#cb4-74" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb4-75"><a href="#cb4-75" tabindex="-1"></a><span class="co">#&gt; $Observations.length$column</span></span>
-<span id="cb4-76"><a href="#cb4-76" tabindex="-1"></a><span class="co">#&gt; [1] 3</span></span>
-<span id="cb4-77"><a href="#cb4-77" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb4-63"><a href="#cb4-63" tabindex="-1"></a><span class="co">#&gt; $Observations.length</span></span>
+<span id="cb4-64"><a href="#cb4-64" tabindex="-1"></a><span class="co">#&gt; $Observations.length$type</span></span>
+<span id="cb4-65"><a href="#cb4-65" tabindex="-1"></a><span class="co">#&gt; [1] &quot;number&quot;</span></span>
+<span id="cb4-66"><a href="#cb4-66" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb4-67"><a href="#cb4-67" tabindex="-1"></a><span class="co">#&gt; $Observations.length$minimum</span></span>
+<span id="cb4-68"><a href="#cb4-68" tabindex="-1"></a><span class="co">#&gt; [1] 0</span></span>
+<span id="cb4-69"><a href="#cb4-69" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb4-70"><a href="#cb4-70" tabindex="-1"></a><span class="co">#&gt; $Observations.length$id</span></span>
+<span id="cb4-71"><a href="#cb4-71" tabindex="-1"></a><span class="co">#&gt; [1] &quot;Observations.length&quot;</span></span>
+<span id="cb4-72"><a href="#cb4-72" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb4-73"><a href="#cb4-73" tabindex="-1"></a><span class="co">#&gt; $Observations.length$name</span></span>
+<span id="cb4-74"><a href="#cb4-74" tabindex="-1"></a><span class="co">#&gt; [1] &quot;length&quot;</span></span>
+<span id="cb4-75"><a href="#cb4-75" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb4-76"><a href="#cb4-76" tabindex="-1"></a><span class="co">#&gt; $Observations.length$sheet</span></span>
+<span id="cb4-77"><a href="#cb4-77" tabindex="-1"></a><span class="co">#&gt; [1] &quot;Observations&quot;</span></span>
 <span id="cb4-78"><a href="#cb4-78" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb4-79"><a href="#cb4-79" tabindex="-1"></a><span class="co">#&gt; $Observations.unit</span></span>
-<span id="cb4-80"><a href="#cb4-80" tabindex="-1"></a><span class="co">#&gt; $Observations.unit$type</span></span>
-<span id="cb4-81"><a href="#cb4-81" tabindex="-1"></a><span class="co">#&gt; [1] &quot;string&quot;</span></span>
-<span id="cb4-82"><a href="#cb4-82" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb4-83"><a href="#cb4-83" tabindex="-1"></a><span class="co">#&gt; $Observations.unit$required_field</span></span>
-<span id="cb4-84"><a href="#cb4-84" tabindex="-1"></a><span class="co">#&gt; [1] &quot;length&quot;</span></span>
+<span id="cb4-79"><a href="#cb4-79" tabindex="-1"></a><span class="co">#&gt; $Observations.length$mandatory</span></span>
+<span id="cb4-80"><a href="#cb4-80" tabindex="-1"></a><span class="co">#&gt; [1] FALSE</span></span>
+<span id="cb4-81"><a href="#cb4-81" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb4-82"><a href="#cb4-82" tabindex="-1"></a><span class="co">#&gt; $Observations.length$column</span></span>
+<span id="cb4-83"><a href="#cb4-83" tabindex="-1"></a><span class="co">#&gt; [1] 3</span></span>
+<span id="cb4-84"><a href="#cb4-84" tabindex="-1"></a><span class="co">#&gt; </span></span>
 <span id="cb4-85"><a href="#cb4-85" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb4-86"><a href="#cb4-86" tabindex="-1"></a><span class="co">#&gt; $Observations.unit$enum</span></span>
-<span id="cb4-87"><a href="#cb4-87" tabindex="-1"></a><span class="co">#&gt; $Observations.unit$enum[[1]]</span></span>
-<span id="cb4-88"><a href="#cb4-88" tabindex="-1"></a><span class="co">#&gt; [1] &quot;cm&quot;</span></span>
+<span id="cb4-86"><a href="#cb4-86" tabindex="-1"></a><span class="co">#&gt; $Observations.unit</span></span>
+<span id="cb4-87"><a href="#cb4-87" tabindex="-1"></a><span class="co">#&gt; $Observations.unit$type</span></span>
+<span id="cb4-88"><a href="#cb4-88" tabindex="-1"></a><span class="co">#&gt; [1] &quot;string&quot;</span></span>
 <span id="cb4-89"><a href="#cb4-89" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb4-90"><a href="#cb4-90" tabindex="-1"></a><span class="co">#&gt; $Observations.unit$enum[[2]]</span></span>
-<span id="cb4-91"><a href="#cb4-91" tabindex="-1"></a><span class="co">#&gt; [1] &quot;m&quot;</span></span>
+<span id="cb4-90"><a href="#cb4-90" tabindex="-1"></a><span class="co">#&gt; $Observations.unit$required_field</span></span>
+<span id="cb4-91"><a href="#cb4-91" tabindex="-1"></a><span class="co">#&gt; [1] &quot;length&quot;</span></span>
 <span id="cb4-92"><a href="#cb4-92" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb4-93"><a href="#cb4-93" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb4-94"><a href="#cb4-94" tabindex="-1"></a><span class="co">#&gt; $Observations.unit$id</span></span>
-<span id="cb4-95"><a href="#cb4-95" tabindex="-1"></a><span class="co">#&gt; [1] &quot;Observations.unit&quot;</span></span>
+<span id="cb4-93"><a href="#cb4-93" tabindex="-1"></a><span class="co">#&gt; $Observations.unit$enum</span></span>
+<span id="cb4-94"><a href="#cb4-94" tabindex="-1"></a><span class="co">#&gt; $Observations.unit$enum[[1]]</span></span>
+<span id="cb4-95"><a href="#cb4-95" tabindex="-1"></a><span class="co">#&gt; [1] &quot;cm&quot;</span></span>
 <span id="cb4-96"><a href="#cb4-96" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb4-97"><a href="#cb4-97" tabindex="-1"></a><span class="co">#&gt; $Observations.unit$name</span></span>
-<span id="cb4-98"><a href="#cb4-98" tabindex="-1"></a><span class="co">#&gt; [1] &quot;unit&quot;</span></span>
+<span id="cb4-97"><a href="#cb4-97" tabindex="-1"></a><span class="co">#&gt; $Observations.unit$enum[[2]]</span></span>
+<span id="cb4-98"><a href="#cb4-98" tabindex="-1"></a><span class="co">#&gt; [1] &quot;m&quot;</span></span>
 <span id="cb4-99"><a href="#cb4-99" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb4-100"><a href="#cb4-100" tabindex="-1"></a><span class="co">#&gt; $Observations.unit$sheet</span></span>
-<span id="cb4-101"><a href="#cb4-101" tabindex="-1"></a><span class="co">#&gt; [1] &quot;Observations&quot;</span></span>
-<span id="cb4-102"><a href="#cb4-102" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb4-103"><a href="#cb4-103" tabindex="-1"></a><span class="co">#&gt; $Observations.unit$mandatory</span></span>
-<span id="cb4-104"><a href="#cb4-104" tabindex="-1"></a><span class="co">#&gt; [1] FALSE</span></span>
-<span id="cb4-105"><a href="#cb4-105" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb4-106"><a href="#cb4-106" tabindex="-1"></a><span class="co">#&gt; $Observations.unit$column</span></span>
-<span id="cb4-107"><a href="#cb4-107" tabindex="-1"></a><span class="co">#&gt; [1] 4</span></span>
-<span id="cb4-108"><a href="#cb4-108" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb4-100"><a href="#cb4-100" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb4-101"><a href="#cb4-101" tabindex="-1"></a><span class="co">#&gt; $Observations.unit$id</span></span>
+<span id="cb4-102"><a href="#cb4-102" tabindex="-1"></a><span class="co">#&gt; [1] &quot;Observations.unit&quot;</span></span>
+<span id="cb4-103"><a href="#cb4-103" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb4-104"><a href="#cb4-104" tabindex="-1"></a><span class="co">#&gt; $Observations.unit$name</span></span>
+<span id="cb4-105"><a href="#cb4-105" tabindex="-1"></a><span class="co">#&gt; [1] &quot;unit&quot;</span></span>
+<span id="cb4-106"><a href="#cb4-106" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb4-107"><a href="#cb4-107" tabindex="-1"></a><span class="co">#&gt; $Observations.unit$sheet</span></span>
+<span id="cb4-108"><a href="#cb4-108" tabindex="-1"></a><span class="co">#&gt; [1] &quot;Observations&quot;</span></span>
 <span id="cb4-109"><a href="#cb4-109" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb4-110"><a href="#cb4-110" tabindex="-1"></a><span class="co">#&gt; $Observations.active</span></span>
-<span id="cb4-111"><a href="#cb4-111" tabindex="-1"></a><span class="co">#&gt; $Observations.active$mandatory</span></span>
-<span id="cb4-112"><a href="#cb4-112" tabindex="-1"></a><span class="co">#&gt; [1] TRUE</span></span>
-<span id="cb4-113"><a href="#cb4-113" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb4-114"><a href="#cb4-114" tabindex="-1"></a><span class="co">#&gt; $Observations.active$type</span></span>
-<span id="cb4-115"><a href="#cb4-115" tabindex="-1"></a><span class="co">#&gt; [1] &quot;boolean&quot;</span></span>
+<span id="cb4-110"><a href="#cb4-110" tabindex="-1"></a><span class="co">#&gt; $Observations.unit$mandatory</span></span>
+<span id="cb4-111"><a href="#cb4-111" tabindex="-1"></a><span class="co">#&gt; [1] FALSE</span></span>
+<span id="cb4-112"><a href="#cb4-112" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb4-113"><a href="#cb4-113" tabindex="-1"></a><span class="co">#&gt; $Observations.unit$column</span></span>
+<span id="cb4-114"><a href="#cb4-114" tabindex="-1"></a><span class="co">#&gt; [1] 4</span></span>
+<span id="cb4-115"><a href="#cb4-115" tabindex="-1"></a><span class="co">#&gt; </span></span>
 <span id="cb4-116"><a href="#cb4-116" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb4-117"><a href="#cb4-117" tabindex="-1"></a><span class="co">#&gt; $Observations.active$id</span></span>
-<span id="cb4-118"><a href="#cb4-118" tabindex="-1"></a><span class="co">#&gt; [1] &quot;Observations.active&quot;</span></span>
-<span id="cb4-119"><a href="#cb4-119" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb4-120"><a href="#cb4-120" tabindex="-1"></a><span class="co">#&gt; $Observations.active$name</span></span>
-<span id="cb4-121"><a href="#cb4-121" tabindex="-1"></a><span class="co">#&gt; [1] &quot;active&quot;</span></span>
-<span id="cb4-122"><a href="#cb4-122" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb4-123"><a href="#cb4-123" tabindex="-1"></a><span class="co">#&gt; $Observations.active$sheet</span></span>
-<span id="cb4-124"><a href="#cb4-124" tabindex="-1"></a><span class="co">#&gt; [1] &quot;Observations&quot;</span></span>
-<span id="cb4-125"><a href="#cb4-125" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb4-126"><a href="#cb4-126" tabindex="-1"></a><span class="co">#&gt; $Observations.active$column</span></span>
-<span id="cb4-127"><a href="#cb4-127" tabindex="-1"></a><span class="co">#&gt; [1] 5</span></span>
-<span id="cb4-128"><a href="#cb4-128" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb4-117"><a href="#cb4-117" tabindex="-1"></a><span class="co">#&gt; $Observations.active</span></span>
+<span id="cb4-118"><a href="#cb4-118" tabindex="-1"></a><span class="co">#&gt; $Observations.active$mandatory</span></span>
+<span id="cb4-119"><a href="#cb4-119" tabindex="-1"></a><span class="co">#&gt; [1] TRUE</span></span>
+<span id="cb4-120"><a href="#cb4-120" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb4-121"><a href="#cb4-121" tabindex="-1"></a><span class="co">#&gt; $Observations.active$type</span></span>
+<span id="cb4-122"><a href="#cb4-122" tabindex="-1"></a><span class="co">#&gt; [1] &quot;boolean&quot;</span></span>
+<span id="cb4-123"><a href="#cb4-123" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb4-124"><a href="#cb4-124" tabindex="-1"></a><span class="co">#&gt; $Observations.active$id</span></span>
+<span id="cb4-125"><a href="#cb4-125" tabindex="-1"></a><span class="co">#&gt; [1] &quot;Observations.active&quot;</span></span>
+<span id="cb4-126"><a href="#cb4-126" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb4-127"><a href="#cb4-127" tabindex="-1"></a><span class="co">#&gt; $Observations.active$name</span></span>
+<span id="cb4-128"><a href="#cb4-128" tabindex="-1"></a><span class="co">#&gt; [1] &quot;active&quot;</span></span>
 <span id="cb4-129"><a href="#cb4-129" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb4-130"><a href="#cb4-130" tabindex="-1"></a><span class="co">#&gt; $Observations.observed_at</span></span>
-<span id="cb4-131"><a href="#cb4-131" tabindex="-1"></a><span class="co">#&gt; $Observations.observed_at$type</span></span>
-<span id="cb4-132"><a href="#cb4-132" tabindex="-1"></a><span class="co">#&gt; [1] &quot;datetime&quot;</span></span>
-<span id="cb4-133"><a href="#cb4-133" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb4-134"><a href="#cb4-134" tabindex="-1"></a><span class="co">#&gt; $Observations.observed_at$id</span></span>
-<span id="cb4-135"><a href="#cb4-135" tabindex="-1"></a><span class="co">#&gt; [1] &quot;Observations.observed_at&quot;</span></span>
+<span id="cb4-130"><a href="#cb4-130" tabindex="-1"></a><span class="co">#&gt; $Observations.active$sheet</span></span>
+<span id="cb4-131"><a href="#cb4-131" tabindex="-1"></a><span class="co">#&gt; [1] &quot;Observations&quot;</span></span>
+<span id="cb4-132"><a href="#cb4-132" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb4-133"><a href="#cb4-133" tabindex="-1"></a><span class="co">#&gt; $Observations.active$column</span></span>
+<span id="cb4-134"><a href="#cb4-134" tabindex="-1"></a><span class="co">#&gt; [1] 5</span></span>
+<span id="cb4-135"><a href="#cb4-135" tabindex="-1"></a><span class="co">#&gt; </span></span>
 <span id="cb4-136"><a href="#cb4-136" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb4-137"><a href="#cb4-137" tabindex="-1"></a><span class="co">#&gt; $Observations.observed_at$name</span></span>
-<span id="cb4-138"><a href="#cb4-138" tabindex="-1"></a><span class="co">#&gt; [1] &quot;observed_at&quot;</span></span>
-<span id="cb4-139"><a href="#cb4-139" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb4-140"><a href="#cb4-140" tabindex="-1"></a><span class="co">#&gt; $Observations.observed_at$sheet</span></span>
-<span id="cb4-141"><a href="#cb4-141" tabindex="-1"></a><span class="co">#&gt; [1] &quot;Observations&quot;</span></span>
-<span id="cb4-142"><a href="#cb4-142" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb4-143"><a href="#cb4-143" tabindex="-1"></a><span class="co">#&gt; $Observations.observed_at$mandatory</span></span>
-<span id="cb4-144"><a href="#cb4-144" tabindex="-1"></a><span class="co">#&gt; [1] FALSE</span></span>
-<span id="cb4-145"><a href="#cb4-145" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb4-146"><a href="#cb4-146" tabindex="-1"></a><span class="co">#&gt; $Observations.observed_at$column</span></span>
-<span id="cb4-147"><a href="#cb4-147" tabindex="-1"></a><span class="co">#&gt; [1] 6</span></span>
-<span id="cb4-148"><a href="#cb4-148" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb4-137"><a href="#cb4-137" tabindex="-1"></a><span class="co">#&gt; $Observations.observed_at</span></span>
+<span id="cb4-138"><a href="#cb4-138" tabindex="-1"></a><span class="co">#&gt; $Observations.observed_at$type</span></span>
+<span id="cb4-139"><a href="#cb4-139" tabindex="-1"></a><span class="co">#&gt; [1] &quot;datetime&quot;</span></span>
+<span id="cb4-140"><a href="#cb4-140" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb4-141"><a href="#cb4-141" tabindex="-1"></a><span class="co">#&gt; $Observations.observed_at$id</span></span>
+<span id="cb4-142"><a href="#cb4-142" tabindex="-1"></a><span class="co">#&gt; [1] &quot;Observations.observed_at&quot;</span></span>
+<span id="cb4-143"><a href="#cb4-143" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb4-144"><a href="#cb4-144" tabindex="-1"></a><span class="co">#&gt; $Observations.observed_at$name</span></span>
+<span id="cb4-145"><a href="#cb4-145" tabindex="-1"></a><span class="co">#&gt; [1] &quot;observed_at&quot;</span></span>
+<span id="cb4-146"><a href="#cb4-146" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb4-147"><a href="#cb4-147" tabindex="-1"></a><span class="co">#&gt; $Observations.observed_at$sheet</span></span>
+<span id="cb4-148"><a href="#cb4-148" tabindex="-1"></a><span class="co">#&gt; [1] &quot;Observations&quot;</span></span>
 <span id="cb4-149"><a href="#cb4-149" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb4-150"><a href="#cb4-150" tabindex="-1"></a><span class="co">#&gt; $Observations.latitude</span></span>
-<span id="cb4-151"><a href="#cb4-151" tabindex="-1"></a><span class="co">#&gt; $Observations.latitude$type</span></span>
-<span id="cb4-152"><a href="#cb4-152" tabindex="-1"></a><span class="co">#&gt; [1] &quot;latitude&quot;</span></span>
-<span id="cb4-153"><a href="#cb4-153" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb4-154"><a href="#cb4-154" tabindex="-1"></a><span class="co">#&gt; $Observations.latitude$id</span></span>
-<span id="cb4-155"><a href="#cb4-155" tabindex="-1"></a><span class="co">#&gt; [1] &quot;Observations.latitude&quot;</span></span>
+<span id="cb4-150"><a href="#cb4-150" tabindex="-1"></a><span class="co">#&gt; $Observations.observed_at$mandatory</span></span>
+<span id="cb4-151"><a href="#cb4-151" tabindex="-1"></a><span class="co">#&gt; [1] FALSE</span></span>
+<span id="cb4-152"><a href="#cb4-152" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb4-153"><a href="#cb4-153" tabindex="-1"></a><span class="co">#&gt; $Observations.observed_at$column</span></span>
+<span id="cb4-154"><a href="#cb4-154" tabindex="-1"></a><span class="co">#&gt; [1] 6</span></span>
+<span id="cb4-155"><a href="#cb4-155" tabindex="-1"></a><span class="co">#&gt; </span></span>
 <span id="cb4-156"><a href="#cb4-156" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb4-157"><a href="#cb4-157" tabindex="-1"></a><span class="co">#&gt; $Observations.latitude$name</span></span>
-<span id="cb4-158"><a href="#cb4-158" tabindex="-1"></a><span class="co">#&gt; [1] &quot;latitude&quot;</span></span>
-<span id="cb4-159"><a href="#cb4-159" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb4-160"><a href="#cb4-160" tabindex="-1"></a><span class="co">#&gt; $Observations.latitude$sheet</span></span>
-<span id="cb4-161"><a href="#cb4-161" tabindex="-1"></a><span class="co">#&gt; [1] &quot;Observations&quot;</span></span>
-<span id="cb4-162"><a href="#cb4-162" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb4-163"><a href="#cb4-163" tabindex="-1"></a><span class="co">#&gt; $Observations.latitude$mandatory</span></span>
-<span id="cb4-164"><a href="#cb4-164" tabindex="-1"></a><span class="co">#&gt; [1] FALSE</span></span>
-<span id="cb4-165"><a href="#cb4-165" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb4-166"><a href="#cb4-166" tabindex="-1"></a><span class="co">#&gt; $Observations.latitude$column</span></span>
-<span id="cb4-167"><a href="#cb4-167" tabindex="-1"></a><span class="co">#&gt; [1] 7</span></span>
-<span id="cb4-168"><a href="#cb4-168" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb4-157"><a href="#cb4-157" tabindex="-1"></a><span class="co">#&gt; $Observations.latitude</span></span>
+<span id="cb4-158"><a href="#cb4-158" tabindex="-1"></a><span class="co">#&gt; $Observations.latitude$type</span></span>
+<span id="cb4-159"><a href="#cb4-159" tabindex="-1"></a><span class="co">#&gt; [1] &quot;latitude&quot;</span></span>
+<span id="cb4-160"><a href="#cb4-160" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb4-161"><a href="#cb4-161" tabindex="-1"></a><span class="co">#&gt; $Observations.latitude$id</span></span>
+<span id="cb4-162"><a href="#cb4-162" tabindex="-1"></a><span class="co">#&gt; [1] &quot;Observations.latitude&quot;</span></span>
+<span id="cb4-163"><a href="#cb4-163" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb4-164"><a href="#cb4-164" tabindex="-1"></a><span class="co">#&gt; $Observations.latitude$name</span></span>
+<span id="cb4-165"><a href="#cb4-165" tabindex="-1"></a><span class="co">#&gt; [1] &quot;latitude&quot;</span></span>
+<span id="cb4-166"><a href="#cb4-166" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb4-167"><a href="#cb4-167" tabindex="-1"></a><span class="co">#&gt; $Observations.latitude$sheet</span></span>
+<span id="cb4-168"><a href="#cb4-168" tabindex="-1"></a><span class="co">#&gt; [1] &quot;Observations&quot;</span></span>
 <span id="cb4-169"><a href="#cb4-169" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb4-170"><a href="#cb4-170" tabindex="-1"></a><span class="co">#&gt; $Observations.longitude</span></span>
-<span id="cb4-171"><a href="#cb4-171" tabindex="-1"></a><span class="co">#&gt; $Observations.longitude$type</span></span>
-<span id="cb4-172"><a href="#cb4-172" tabindex="-1"></a><span class="co">#&gt; [1] &quot;longitude&quot;</span></span>
-<span id="cb4-173"><a href="#cb4-173" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb4-174"><a href="#cb4-174" tabindex="-1"></a><span class="co">#&gt; $Observations.longitude$id</span></span>
-<span id="cb4-175"><a href="#cb4-175" tabindex="-1"></a><span class="co">#&gt; [1] &quot;Observations.longitude&quot;</span></span>
+<span id="cb4-170"><a href="#cb4-170" tabindex="-1"></a><span class="co">#&gt; $Observations.latitude$mandatory</span></span>
+<span id="cb4-171"><a href="#cb4-171" tabindex="-1"></a><span class="co">#&gt; [1] FALSE</span></span>
+<span id="cb4-172"><a href="#cb4-172" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb4-173"><a href="#cb4-173" tabindex="-1"></a><span class="co">#&gt; $Observations.latitude$column</span></span>
+<span id="cb4-174"><a href="#cb4-174" tabindex="-1"></a><span class="co">#&gt; [1] 7</span></span>
+<span id="cb4-175"><a href="#cb4-175" tabindex="-1"></a><span class="co">#&gt; </span></span>
 <span id="cb4-176"><a href="#cb4-176" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb4-177"><a href="#cb4-177" tabindex="-1"></a><span class="co">#&gt; $Observations.longitude$name</span></span>
-<span id="cb4-178"><a href="#cb4-178" tabindex="-1"></a><span class="co">#&gt; [1] &quot;longitude&quot;</span></span>
-<span id="cb4-179"><a href="#cb4-179" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb4-180"><a href="#cb4-180" tabindex="-1"></a><span class="co">#&gt; $Observations.longitude$sheet</span></span>
-<span id="cb4-181"><a href="#cb4-181" tabindex="-1"></a><span class="co">#&gt; [1] &quot;Observations&quot;</span></span>
-<span id="cb4-182"><a href="#cb4-182" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb4-183"><a href="#cb4-183" tabindex="-1"></a><span class="co">#&gt; $Observations.longitude$mandatory</span></span>
-<span id="cb4-184"><a href="#cb4-184" tabindex="-1"></a><span class="co">#&gt; [1] FALSE</span></span>
-<span id="cb4-185"><a href="#cb4-185" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb4-186"><a href="#cb4-186" tabindex="-1"></a><span class="co">#&gt; $Observations.longitude$column</span></span>
-<span id="cb4-187"><a href="#cb4-187" tabindex="-1"></a><span class="co">#&gt; [1] 8</span></span>
-<span id="cb4-188"><a href="#cb4-188" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb4-177"><a href="#cb4-177" tabindex="-1"></a><span class="co">#&gt; $Observations.longitude</span></span>
+<span id="cb4-178"><a href="#cb4-178" tabindex="-1"></a><span class="co">#&gt; $Observations.longitude$type</span></span>
+<span id="cb4-179"><a href="#cb4-179" tabindex="-1"></a><span class="co">#&gt; [1] &quot;longitude&quot;</span></span>
+<span id="cb4-180"><a href="#cb4-180" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb4-181"><a href="#cb4-181" tabindex="-1"></a><span class="co">#&gt; $Observations.longitude$id</span></span>
+<span id="cb4-182"><a href="#cb4-182" tabindex="-1"></a><span class="co">#&gt; [1] &quot;Observations.longitude&quot;</span></span>
+<span id="cb4-183"><a href="#cb4-183" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb4-184"><a href="#cb4-184" tabindex="-1"></a><span class="co">#&gt; $Observations.longitude$name</span></span>
+<span id="cb4-185"><a href="#cb4-185" tabindex="-1"></a><span class="co">#&gt; [1] &quot;longitude&quot;</span></span>
+<span id="cb4-186"><a href="#cb4-186" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb4-187"><a href="#cb4-187" tabindex="-1"></a><span class="co">#&gt; $Observations.longitude$sheet</span></span>
+<span id="cb4-188"><a href="#cb4-188" tabindex="-1"></a><span class="co">#&gt; [1] &quot;Observations&quot;</span></span>
 <span id="cb4-189"><a href="#cb4-189" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb4-190"><a href="#cb4-190" tabindex="-1"></a><span class="co">#&gt; $Observations.observation_id</span></span>
-<span id="cb4-191"><a href="#cb4-191" tabindex="-1"></a><span class="co">#&gt; $Observations.observation_id$type</span></span>
-<span id="cb4-192"><a href="#cb4-192" tabindex="-1"></a><span class="co">#&gt; [1] &quot;string&quot;</span></span>
-<span id="cb4-193"><a href="#cb4-193" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb4-194"><a href="#cb4-194" tabindex="-1"></a><span class="co">#&gt; $Observations.observation_id$pattern</span></span>
-<span id="cb4-195"><a href="#cb4-195" tabindex="-1"></a><span class="co">#&gt; [1] &quot;^OBS-[0-9]{3}$&quot;</span></span>
+<span id="cb4-190"><a href="#cb4-190" tabindex="-1"></a><span class="co">#&gt; $Observations.longitude$mandatory</span></span>
+<span id="cb4-191"><a href="#cb4-191" tabindex="-1"></a><span class="co">#&gt; [1] FALSE</span></span>
+<span id="cb4-192"><a href="#cb4-192" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb4-193"><a href="#cb4-193" tabindex="-1"></a><span class="co">#&gt; $Observations.longitude$column</span></span>
+<span id="cb4-194"><a href="#cb4-194" tabindex="-1"></a><span class="co">#&gt; [1] 8</span></span>
+<span id="cb4-195"><a href="#cb4-195" tabindex="-1"></a><span class="co">#&gt; </span></span>
 <span id="cb4-196"><a href="#cb4-196" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb4-197"><a href="#cb4-197" tabindex="-1"></a><span class="co">#&gt; $Observations.observation_id$unique</span></span>
-<span id="cb4-198"><a href="#cb4-198" tabindex="-1"></a><span class="co">#&gt; [1] TRUE</span></span>
-<span id="cb4-199"><a href="#cb4-199" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb4-200"><a href="#cb4-200" tabindex="-1"></a><span class="co">#&gt; $Observations.observation_id$id</span></span>
-<span id="cb4-201"><a href="#cb4-201" tabindex="-1"></a><span class="co">#&gt; [1] &quot;Observations.observation_id&quot;</span></span>
-<span id="cb4-202"><a href="#cb4-202" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb4-203"><a href="#cb4-203" tabindex="-1"></a><span class="co">#&gt; $Observations.observation_id$name</span></span>
-<span id="cb4-204"><a href="#cb4-204" tabindex="-1"></a><span class="co">#&gt; [1] &quot;observation_id&quot;</span></span>
-<span id="cb4-205"><a href="#cb4-205" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb4-206"><a href="#cb4-206" tabindex="-1"></a><span class="co">#&gt; $Observations.observation_id$sheet</span></span>
-<span id="cb4-207"><a href="#cb4-207" tabindex="-1"></a><span class="co">#&gt; [1] &quot;Observations&quot;</span></span>
-<span id="cb4-208"><a href="#cb4-208" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb4-209"><a href="#cb4-209" tabindex="-1"></a><span class="co">#&gt; $Observations.observation_id$mandatory</span></span>
-<span id="cb4-210"><a href="#cb4-210" tabindex="-1"></a><span class="co">#&gt; [1] FALSE</span></span>
-<span id="cb4-211"><a href="#cb4-211" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb4-212"><a href="#cb4-212" tabindex="-1"></a><span class="co">#&gt; $Observations.observation_id$column</span></span>
-<span id="cb4-213"><a href="#cb4-213" tabindex="-1"></a><span class="co">#&gt; [1] 9</span></span>
-<span id="cb4-214"><a href="#cb4-214" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb4-197"><a href="#cb4-197" tabindex="-1"></a><span class="co">#&gt; $Observations.observation_id</span></span>
+<span id="cb4-198"><a href="#cb4-198" tabindex="-1"></a><span class="co">#&gt; $Observations.observation_id$type</span></span>
+<span id="cb4-199"><a href="#cb4-199" tabindex="-1"></a><span class="co">#&gt; [1] &quot;string&quot;</span></span>
+<span id="cb4-200"><a href="#cb4-200" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb4-201"><a href="#cb4-201" tabindex="-1"></a><span class="co">#&gt; $Observations.observation_id$pattern</span></span>
+<span id="cb4-202"><a href="#cb4-202" tabindex="-1"></a><span class="co">#&gt; [1] &quot;^OBS-[0-9]{3}$&quot;</span></span>
+<span id="cb4-203"><a href="#cb4-203" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb4-204"><a href="#cb4-204" tabindex="-1"></a><span class="co">#&gt; $Observations.observation_id$id</span></span>
+<span id="cb4-205"><a href="#cb4-205" tabindex="-1"></a><span class="co">#&gt; [1] &quot;Observations.observation_id&quot;</span></span>
+<span id="cb4-206"><a href="#cb4-206" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb4-207"><a href="#cb4-207" tabindex="-1"></a><span class="co">#&gt; $Observations.observation_id$name</span></span>
+<span id="cb4-208"><a href="#cb4-208" tabindex="-1"></a><span class="co">#&gt; [1] &quot;observation_id&quot;</span></span>
+<span id="cb4-209"><a href="#cb4-209" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb4-210"><a href="#cb4-210" tabindex="-1"></a><span class="co">#&gt; $Observations.observation_id$sheet</span></span>
+<span id="cb4-211"><a href="#cb4-211" tabindex="-1"></a><span class="co">#&gt; [1] &quot;Observations&quot;</span></span>
+<span id="cb4-212"><a href="#cb4-212" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb4-213"><a href="#cb4-213" tabindex="-1"></a><span class="co">#&gt; $Observations.observation_id$mandatory</span></span>
+<span id="cb4-214"><a href="#cb4-214" tabindex="-1"></a><span class="co">#&gt; [1] FALSE</span></span>
 <span id="cb4-215"><a href="#cb4-215" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb4-216"><a href="#cb4-216" tabindex="-1"></a><span class="co">#&gt; $Observations.quality</span></span>
-<span id="cb4-217"><a href="#cb4-217" tabindex="-1"></a><span class="co">#&gt; $Observations.quality$type</span></span>
-<span id="cb4-218"><a href="#cb4-218" tabindex="-1"></a><span class="co">#&gt; [1] &quot;integer&quot;</span></span>
+<span id="cb4-216"><a href="#cb4-216" tabindex="-1"></a><span class="co">#&gt; $Observations.observation_id$column</span></span>
+<span id="cb4-217"><a href="#cb4-217" tabindex="-1"></a><span class="co">#&gt; [1] 9</span></span>
+<span id="cb4-218"><a href="#cb4-218" tabindex="-1"></a><span class="co">#&gt; </span></span>
 <span id="cb4-219"><a href="#cb4-219" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb4-220"><a href="#cb4-220" tabindex="-1"></a><span class="co">#&gt; $Observations.quality$enum</span></span>
-<span id="cb4-221"><a href="#cb4-221" tabindex="-1"></a><span class="co">#&gt; $Observations.quality$enum[[1]]</span></span>
-<span id="cb4-222"><a href="#cb4-222" tabindex="-1"></a><span class="co">#&gt; [1] 1</span></span>
+<span id="cb4-220"><a href="#cb4-220" tabindex="-1"></a><span class="co">#&gt; $Observations.quality</span></span>
+<span id="cb4-221"><a href="#cb4-221" tabindex="-1"></a><span class="co">#&gt; $Observations.quality$type</span></span>
+<span id="cb4-222"><a href="#cb4-222" tabindex="-1"></a><span class="co">#&gt; [1] &quot;integer&quot;</span></span>
 <span id="cb4-223"><a href="#cb4-223" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb4-224"><a href="#cb4-224" tabindex="-1"></a><span class="co">#&gt; $Observations.quality$enum[[2]]</span></span>
-<span id="cb4-225"><a href="#cb4-225" tabindex="-1"></a><span class="co">#&gt; [1] 2</span></span>
-<span id="cb4-226"><a href="#cb4-226" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb4-227"><a href="#cb4-227" tabindex="-1"></a><span class="co">#&gt; $Observations.quality$enum[[3]]</span></span>
-<span id="cb4-228"><a href="#cb4-228" tabindex="-1"></a><span class="co">#&gt; [1] 3</span></span>
-<span id="cb4-229"><a href="#cb4-229" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb4-224"><a href="#cb4-224" tabindex="-1"></a><span class="co">#&gt; $Observations.quality$enum</span></span>
+<span id="cb4-225"><a href="#cb4-225" tabindex="-1"></a><span class="co">#&gt; $Observations.quality$enum[[1]]</span></span>
+<span id="cb4-226"><a href="#cb4-226" tabindex="-1"></a><span class="co">#&gt; [1] 1</span></span>
+<span id="cb4-227"><a href="#cb4-227" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb4-228"><a href="#cb4-228" tabindex="-1"></a><span class="co">#&gt; $Observations.quality$enum[[2]]</span></span>
+<span id="cb4-229"><a href="#cb4-229" tabindex="-1"></a><span class="co">#&gt; [1] 2</span></span>
 <span id="cb4-230"><a href="#cb4-230" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb4-231"><a href="#cb4-231" tabindex="-1"></a><span class="co">#&gt; $Observations.quality$id</span></span>
-<span id="cb4-232"><a href="#cb4-232" tabindex="-1"></a><span class="co">#&gt; [1] &quot;Observations.quality&quot;</span></span>
+<span id="cb4-231"><a href="#cb4-231" tabindex="-1"></a><span class="co">#&gt; $Observations.quality$enum[[3]]</span></span>
+<span id="cb4-232"><a href="#cb4-232" tabindex="-1"></a><span class="co">#&gt; [1] 3</span></span>
 <span id="cb4-233"><a href="#cb4-233" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb4-234"><a href="#cb4-234" tabindex="-1"></a><span class="co">#&gt; $Observations.quality$name</span></span>
-<span id="cb4-235"><a href="#cb4-235" tabindex="-1"></a><span class="co">#&gt; [1] &quot;quality&quot;</span></span>
-<span id="cb4-236"><a href="#cb4-236" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb4-237"><a href="#cb4-237" tabindex="-1"></a><span class="co">#&gt; $Observations.quality$sheet</span></span>
-<span id="cb4-238"><a href="#cb4-238" tabindex="-1"></a><span class="co">#&gt; [1] &quot;Observations&quot;</span></span>
-<span id="cb4-239"><a href="#cb4-239" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb4-240"><a href="#cb4-240" tabindex="-1"></a><span class="co">#&gt; $Observations.quality$mandatory</span></span>
-<span id="cb4-241"><a href="#cb4-241" tabindex="-1"></a><span class="co">#&gt; [1] FALSE</span></span>
-<span id="cb4-242"><a href="#cb4-242" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb4-243"><a href="#cb4-243" tabindex="-1"></a><span class="co">#&gt; $Observations.quality$column</span></span>
-<span id="cb4-244"><a href="#cb4-244" tabindex="-1"></a><span class="co">#&gt; [1] 10</span></span>
-<span id="cb4-245"><a href="#cb4-245" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb4-234"><a href="#cb4-234" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb4-235"><a href="#cb4-235" tabindex="-1"></a><span class="co">#&gt; $Observations.quality$id</span></span>
+<span id="cb4-236"><a href="#cb4-236" tabindex="-1"></a><span class="co">#&gt; [1] &quot;Observations.quality&quot;</span></span>
+<span id="cb4-237"><a href="#cb4-237" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb4-238"><a href="#cb4-238" tabindex="-1"></a><span class="co">#&gt; $Observations.quality$name</span></span>
+<span id="cb4-239"><a href="#cb4-239" tabindex="-1"></a><span class="co">#&gt; [1] &quot;quality&quot;</span></span>
+<span id="cb4-240"><a href="#cb4-240" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb4-241"><a href="#cb4-241" tabindex="-1"></a><span class="co">#&gt; $Observations.quality$sheet</span></span>
+<span id="cb4-242"><a href="#cb4-242" tabindex="-1"></a><span class="co">#&gt; [1] &quot;Observations&quot;</span></span>
+<span id="cb4-243"><a href="#cb4-243" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb4-244"><a href="#cb4-244" tabindex="-1"></a><span class="co">#&gt; $Observations.quality$mandatory</span></span>
+<span id="cb4-245"><a href="#cb4-245" tabindex="-1"></a><span class="co">#&gt; [1] FALSE</span></span>
 <span id="cb4-246"><a href="#cb4-246" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb4-247"><a href="#cb4-247" tabindex="-1"></a><span class="co">#&gt; $Observations.observer</span></span>
-<span id="cb4-248"><a href="#cb4-248" tabindex="-1"></a><span class="co">#&gt; $Observations.observer$type</span></span>
-<span id="cb4-249"><a href="#cb4-249" tabindex="-1"></a><span class="co">#&gt; [1] &quot;string&quot;</span></span>
+<span id="cb4-247"><a href="#cb4-247" tabindex="-1"></a><span class="co">#&gt; $Observations.quality$column</span></span>
+<span id="cb4-248"><a href="#cb4-248" tabindex="-1"></a><span class="co">#&gt; [1] 10</span></span>
+<span id="cb4-249"><a href="#cb4-249" tabindex="-1"></a><span class="co">#&gt; </span></span>
 <span id="cb4-250"><a href="#cb4-250" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb4-251"><a href="#cb4-251" tabindex="-1"></a><span class="co">#&gt; $Observations.observer$reference</span></span>
-<span id="cb4-252"><a href="#cb4-252" tabindex="-1"></a><span class="co">#&gt; $Observations.observer$reference$id</span></span>
-<span id="cb4-253"><a href="#cb4-253" tabindex="-1"></a><span class="co">#&gt; [1] &quot;observers&quot;</span></span>
+<span id="cb4-251"><a href="#cb4-251" tabindex="-1"></a><span class="co">#&gt; $Observations.observer</span></span>
+<span id="cb4-252"><a href="#cb4-252" tabindex="-1"></a><span class="co">#&gt; $Observations.observer$type</span></span>
+<span id="cb4-253"><a href="#cb4-253" tabindex="-1"></a><span class="co">#&gt; [1] &quot;string&quot;</span></span>
 <span id="cb4-254"><a href="#cb4-254" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb4-255"><a href="#cb4-255" tabindex="-1"></a><span class="co">#&gt; $Observations.observer$reference$severity</span></span>
-<span id="cb4-256"><a href="#cb4-256" tabindex="-1"></a><span class="co">#&gt; [1] &quot;warning&quot;</span></span>
-<span id="cb4-257"><a href="#cb4-257" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb4-255"><a href="#cb4-255" tabindex="-1"></a><span class="co">#&gt; $Observations.observer$reference</span></span>
+<span id="cb4-256"><a href="#cb4-256" tabindex="-1"></a><span class="co">#&gt; $Observations.observer$reference$catalogue</span></span>
+<span id="cb4-257"><a href="#cb4-257" tabindex="-1"></a><span class="co">#&gt; [1] &quot;code_lists&quot;</span></span>
 <span id="cb4-258"><a href="#cb4-258" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb4-259"><a href="#cb4-259" tabindex="-1"></a><span class="co">#&gt; $Observations.observer$id</span></span>
-<span id="cb4-260"><a href="#cb4-260" tabindex="-1"></a><span class="co">#&gt; [1] &quot;Observations.observer&quot;</span></span>
+<span id="cb4-259"><a href="#cb4-259" tabindex="-1"></a><span class="co">#&gt; $Observations.observer$reference$table</span></span>
+<span id="cb4-260"><a href="#cb4-260" tabindex="-1"></a><span class="co">#&gt; [1] &quot;observers&quot;</span></span>
 <span id="cb4-261"><a href="#cb4-261" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb4-262"><a href="#cb4-262" tabindex="-1"></a><span class="co">#&gt; $Observations.observer$name</span></span>
-<span id="cb4-263"><a href="#cb4-263" tabindex="-1"></a><span class="co">#&gt; [1] &quot;observer&quot;</span></span>
+<span id="cb4-262"><a href="#cb4-262" tabindex="-1"></a><span class="co">#&gt; $Observations.observer$reference$lookup</span></span>
+<span id="cb4-263"><a href="#cb4-263" tabindex="-1"></a><span class="co">#&gt; [1] &quot;code&quot;</span></span>
 <span id="cb4-264"><a href="#cb4-264" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb4-265"><a href="#cb4-265" tabindex="-1"></a><span class="co">#&gt; $Observations.observer$sheet</span></span>
-<span id="cb4-266"><a href="#cb4-266" tabindex="-1"></a><span class="co">#&gt; [1] &quot;Observations&quot;</span></span>
+<span id="cb4-265"><a href="#cb4-265" tabindex="-1"></a><span class="co">#&gt; $Observations.observer$reference$severity</span></span>
+<span id="cb4-266"><a href="#cb4-266" tabindex="-1"></a><span class="co">#&gt; [1] &quot;warning&quot;</span></span>
 <span id="cb4-267"><a href="#cb4-267" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb4-268"><a href="#cb4-268" tabindex="-1"></a><span class="co">#&gt; $Observations.observer$mandatory</span></span>
-<span id="cb4-269"><a href="#cb4-269" tabindex="-1"></a><span class="co">#&gt; [1] FALSE</span></span>
-<span id="cb4-270"><a href="#cb4-270" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb4-271"><a href="#cb4-271" tabindex="-1"></a><span class="co">#&gt; $Observations.observer$column</span></span>
-<span id="cb4-272"><a href="#cb4-272" tabindex="-1"></a><span class="co">#&gt; [1] 11</span></span>
-<span id="cb4-273"><a href="#cb4-273" tabindex="-1"></a><span class="fu">form_layout</span>(m, <span class="at">id =</span> <span class="st">&quot;Observations&quot;</span>)</span>
-<span id="cb4-274"><a href="#cb4-274" tabindex="-1"></a><span class="co">#&gt; $kind</span></span>
-<span id="cb4-275"><a href="#cb4-275" tabindex="-1"></a><span class="co">#&gt; [1] &quot;table&quot;</span></span>
-<span id="cb4-276"><a href="#cb4-276" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb4-277"><a href="#cb4-277" tabindex="-1"></a><span class="co">#&gt; $start_row</span></span>
-<span id="cb4-278"><a href="#cb4-278" tabindex="-1"></a><span class="co">#&gt; [1] 6</span></span>
-<span id="cb4-279"><a href="#cb4-279" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb4-280"><a href="#cb4-280" tabindex="-1"></a><span class="co">#&gt; $column_count</span></span>
-<span id="cb4-281"><a href="#cb4-281" tabindex="-1"></a><span class="co">#&gt; [1] 11</span></span>
-<span id="cb4-282"><a href="#cb4-282" tabindex="-1"></a><span class="fu">form_field</span>(m, <span class="at">id =</span> <span class="st">&quot;Metadata.submission&quot;</span>)[<span class="fu">c</span>(<span class="st">&quot;row&quot;</span>, <span class="st">&quot;column&quot;</span>)]</span>
-<span id="cb4-283"><a href="#cb4-283" tabindex="-1"></a><span class="co">#&gt; $row</span></span>
-<span id="cb4-284"><a href="#cb4-284" tabindex="-1"></a><span class="co">#&gt; [1] 2</span></span>
-<span id="cb4-285"><a href="#cb4-285" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb4-286"><a href="#cb4-286" tabindex="-1"></a><span class="co">#&gt; $column</span></span>
-<span id="cb4-287"><a href="#cb4-287" tabindex="-1"></a><span class="co">#&gt; [1] 3</span></span>
-<span id="cb4-288"><a href="#cb4-288" tabindex="-1"></a><span class="fu">form_references</span>(m)</span>
-<span id="cb4-289"><a href="#cb4-289" tabindex="-1"></a><span class="co">#&gt; [1] &quot;observers&quot; &quot;stations&quot;</span></span></code></pre></div>
+<span id="cb4-268"><a href="#cb4-268" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb4-269"><a href="#cb4-269" tabindex="-1"></a><span class="co">#&gt; $Observations.observer$id</span></span>
+<span id="cb4-270"><a href="#cb4-270" tabindex="-1"></a><span class="co">#&gt; [1] &quot;Observations.observer&quot;</span></span>
+<span id="cb4-271"><a href="#cb4-271" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb4-272"><a href="#cb4-272" tabindex="-1"></a><span class="co">#&gt; $Observations.observer$name</span></span>
+<span id="cb4-273"><a href="#cb4-273" tabindex="-1"></a><span class="co">#&gt; [1] &quot;observer&quot;</span></span>
+<span id="cb4-274"><a href="#cb4-274" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb4-275"><a href="#cb4-275" tabindex="-1"></a><span class="co">#&gt; $Observations.observer$sheet</span></span>
+<span id="cb4-276"><a href="#cb4-276" tabindex="-1"></a><span class="co">#&gt; [1] &quot;Observations&quot;</span></span>
+<span id="cb4-277"><a href="#cb4-277" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb4-278"><a href="#cb4-278" tabindex="-1"></a><span class="co">#&gt; $Observations.observer$mandatory</span></span>
+<span id="cb4-279"><a href="#cb4-279" tabindex="-1"></a><span class="co">#&gt; [1] FALSE</span></span>
+<span id="cb4-280"><a href="#cb4-280" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb4-281"><a href="#cb4-281" tabindex="-1"></a><span class="co">#&gt; $Observations.observer$column</span></span>
+<span id="cb4-282"><a href="#cb4-282" tabindex="-1"></a><span class="co">#&gt; [1] 11</span></span>
+<span id="cb4-283"><a href="#cb4-283" tabindex="-1"></a><span class="co"># Inspect the observation table layout.</span></span>
+<span id="cb4-284"><a href="#cb4-284" tabindex="-1"></a><span class="fu">form_layout</span>(model_definition, <span class="at">id =</span> <span class="st">&quot;Observations&quot;</span>)</span>
+<span id="cb4-285"><a href="#cb4-285" tabindex="-1"></a><span class="co">#&gt; $kind</span></span>
+<span id="cb4-286"><a href="#cb4-286" tabindex="-1"></a><span class="co">#&gt; [1] &quot;table&quot;</span></span>
+<span id="cb4-287"><a href="#cb4-287" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb4-288"><a href="#cb4-288" tabindex="-1"></a><span class="co">#&gt; $start_row</span></span>
+<span id="cb4-289"><a href="#cb4-289" tabindex="-1"></a><span class="co">#&gt; [1] 6</span></span>
+<span id="cb4-290"><a href="#cb4-290" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb4-291"><a href="#cb4-291" tabindex="-1"></a><span class="co">#&gt; $column_count</span></span>
+<span id="cb4-292"><a href="#cb4-292" tabindex="-1"></a><span class="co">#&gt; [1] 11</span></span>
+<span id="cb4-293"><a href="#cb4-293" tabindex="-1"></a><span class="co"># Locate the submission identifier&#39;s row and column.</span></span>
+<span id="cb4-294"><a href="#cb4-294" tabindex="-1"></a><span class="fu">form_field</span>(model_definition, <span class="at">id =</span> <span class="st">&quot;Metadata.submission&quot;</span>)[<span class="fu">c</span>(<span class="st">&quot;row&quot;</span>, <span class="st">&quot;column&quot;</span>)]</span>
+<span id="cb4-295"><a href="#cb4-295" tabindex="-1"></a><span class="co">#&gt; $row</span></span>
+<span id="cb4-296"><a href="#cb4-296" tabindex="-1"></a><span class="co">#&gt; [1] 2</span></span>
+<span id="cb4-297"><a href="#cb4-297" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb4-298"><a href="#cb4-298" tabindex="-1"></a><span class="co">#&gt; $column</span></span>
+<span id="cb4-299"><a href="#cb4-299" tabindex="-1"></a><span class="co">#&gt; [1] 3</span></span></code></pre></div>
 <p>Fields retain declaration order; coordinates are one-based. Field IDs
 use <code>&lt;sheet&gt;.&lt;field&gt;</code>.</p>
 <p>Accessors expose declarations without executing constraints or
